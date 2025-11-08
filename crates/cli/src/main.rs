@@ -244,13 +244,12 @@ pub fn parse_args<'a>(
 
 fn main() -> Result<(), Box<dyn error::Error>> {
     solana_logger::setup_with_default("off");
-    // Add fireblocks suffix when feature is enabled
-    let version = if cfg!(feature = "fireblocks") {
-        format!("{}-fireblocks", solana_version::version!())
-    } else {
-        solana_version::version!().to_string()
-    };
-    let matches = get_clap_app(crate_name!(), crate_description!(), &version).get_matches();
+    let matches = get_clap_app(
+        crate_name!(),
+        crate_description!(),
+        solana_version::version!(),
+    )
+    .get_matches();
 
     do_main(&matches).map_err(|err| DisplayError::new_as_boxed(err).into())
 }
