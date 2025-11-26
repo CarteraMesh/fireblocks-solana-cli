@@ -79,6 +79,7 @@ solana-offchain-message = "3.0"
 solana-packet = "3.0"
 solana-presigner = "3.0"
 solana-program-runtime = {  version = "3.0" }
+solana-program-option = "3.0"
 solana-pubkey = { version = "3.0", default-features = false }
 solana-pubsub-client = { version = "3.0" }
 solana-quic-client = { version = "3.0" }

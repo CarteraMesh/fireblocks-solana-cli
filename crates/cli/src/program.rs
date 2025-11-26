@@ -3148,11 +3148,25 @@ fn send_deploy_messages(
             // This check is to ensure signing does not fail on a KeypairPubkeyMismatch error from an
             // extraneous signature.
             if message.header.num_required_signatures == 3 {
+                #[cfg(feature = "fireblocks")]
+                crate::fireblocks_sign!(
+                    initial_transaction,
+                    &[fee_payer_signer, initial_signer, write_signer.unwrap()],
+                    blockhash
+                );
+                #[cfg(not(feature = "fireblocks"))]
                 initial_transaction.try_sign(
                     &[fee_payer_signer, initial_signer, write_signer.unwrap()],
                     blockhash,
                 )?;
             } else if message.header.num_required_signatures == 2 {
+                #[cfg(feature = "fireblocks")]
+                crate::fireblocks_sign!(
+                    initial_transaction,
+                    &[fee_payer_signer, initial_signer],
+                    blockhash
+                );
+                #[cfg(not(feature = "fireblocks"))]
                 initial_transaction.try_sign(&[fee_payer_signer, initial_signer], blockhash)?;
             } else {
                 initial_transaction.try_sign(&[fee_payer_signer], blockhash)?;
@@ -3266,6 +3280,9 @@ fn send_deploy_messages(
             let blockhash = rpc_client.get_latest_blockhash()?;
             let mut signers = final_signers.to_vec();
             signers.push(fee_payer_signer);
+            #[cfg(feature = "fireblocks")]
+            crate::fireblocks_sign!(final_tx, &signers, blockhash);
+            #[cfg(not(feature = "fireblocks"))]
             final_tx.try_sign(&signers, blockhash)?;
             return Ok(Some(
                 rpc_client

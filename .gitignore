@@ -1,6 +1,5 @@
 /target
 /.env
-Cargo.lock
 .idea/
 *.lua
 .vscode/
