@@ -28,7 +28,7 @@ num-traits = { version = "0.2"}
 pretty-hex = {  version = "0.4"}
 reqwest = { version = "0.12.23" , features = ["blocking", "brotli", "deflate", "gzip", "rustls-tls", "json"] }
 semver = {  version = "1"}
-home = { version = "=0.5.11"}
+home = { version = "=0.5.12"}
 
 dirs-next = "2.0.0"
 chrono = { version = "0.4.41", default-features = false }
