@@ -54,7 +54,7 @@ solana-clock =  { workspace = true }
 solana-cluster-type =  { workspace = true }
 solana-commitment-config = { workspace = true }
 solana-compute-budget-interface = { workspace = true , features = ["borsh"] }
-solana-config-interface = "=2.0.0"
+solana-config-interface = { workspace = true }
 solana-connection-cache = { workspace = true }
 solana-epoch-schedule = { workspace = true }
 solana-feature-gate-interface = { workspace = true , features = ["bincode"] }

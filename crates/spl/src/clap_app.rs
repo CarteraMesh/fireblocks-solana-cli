@@ -121,6 +121,7 @@ pub enum CommandName {
     CreateToken,
     Close,
     CloseMint,
+    Bench,
     CreateAccount,
     CreateMultisig,
     Authorize,

@@ -1,6 +1,7 @@
 #![allow(clippy::arithmetic_side_effects)]
 use {
     crate::{
+        bench::*,
         clap_app::*,
         config::{Config, MintInfo},
         encryption_keypair::*,
@@ -26,9 +27,9 @@ use {
     solana_client::rpc_request::TokenAccountsFilter,
     solana_instruction::AccountMeta,
     solana_keypair::Keypair,
+    solana_program_option::COption,
     solana_pubkey::Pubkey,
     solana_remote_wallet::remote_wallet::RemoteWalletManager,
-    solana_program_option::COption,
     solana_signer::Signer,
     solana_system_interface::program as system_program,
     spl_associated_token_account_interface::address::get_associated_token_address_with_program_id,
@@ -363,7 +364,8 @@ async fn command_create_token(
     }
 
     if let Some(text) = memo {
-        token.with_memo(text, vec![config.default_signer()?.pubkey()]);
+        let memo_signers: Vec<Pubkey> = bulk_signers.iter().map(|s| s.pubkey()).collect();
+        token.with_memo(text, memo_signers);
     }
 
     // CLI checks that only one is set
@@ -3717,6 +3719,15 @@ pub async fn process_command(
     mut bulk_signers: Vec<Arc<dyn Signer>>,
 ) -> CommandResult {
     match (sub_command, sub_matches) {
+        (CommandName::Bench, arg_matches) => {
+            bench_process_command(
+                arg_matches,
+                config,
+                std::mem::take(&mut bulk_signers),
+                &mut wallet_manager,
+            )
+            .await
+        }
         (CommandName::CreateToken, arg_matches) => {
             let decimals = *arg_matches.get_one::<u8>("decimals").unwrap();
             let mint_authority =
