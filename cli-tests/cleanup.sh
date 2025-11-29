@@ -1,5 +1,5 @@
 #!/bin/bash
-source scripts/keys.sh
+source cli-tests/keys.sh
 ADDRESS=$(cargo run -p solana-cli -- --config "${1}" address)
 CONFIG="${1:?}"
 function check_account() {
