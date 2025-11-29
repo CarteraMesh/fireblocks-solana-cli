@@ -19,7 +19,7 @@ jobs:
         uses: carteramesh/ci/.github/actions/rust-init@main
         with:
           ubuntu_packages: "libhidapi-dev libudev-dev libgpgme-dev"
-      - uses: CarteraMesh/fireblocks-config-action@v1
+      - uses: CarteraMesh/fireblocks-config-action@main
         id: config
         with:
           fireblocks-secret: |
