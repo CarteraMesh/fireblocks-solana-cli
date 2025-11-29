@@ -59,7 +59,7 @@ libtest-mimic = "0.8"
 solana-nonce = { workspace = true }
 solana-sdk-ids = { workspace = true }
 solana-test-validator = { workspace = true }
-tempfile = "3.23.0"
+tempfile = { workspace = true }
 
 [[test]]
 name = "command"
