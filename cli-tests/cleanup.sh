@@ -8,12 +8,9 @@ function check_account() {
 (check_account $TOKEN22 && \
     cargo run -p spl-token-cli -- --config "$CONFIG" close-mint --program-2022 --verbose $TOKEN22) || \
     echo "$TOKEN22 already closed"
-(check_account $TOKEN && \
-    cargo run -p spl-token-cli -- --config "$CONFIG" close-mint  --verbose $TOKEN) || \
-    echo "$TOKEN already closed"
 (check_account $STAKE && \
     cargo run -p solana-cli -- --config "$CONFIG" withdraw-stake  --verbose $STAKE "$ADDRESS" ALL) || \
     echo "$STAKE already closed"
 (check_account $NONCE && \
-    cargo run -p solana-cli -- --config "$CONFIG" withdraw-from-nonce-account  --verbose $NONCE "$ADDRESS" 0.01) || \
+    cargo run -p solana-cli -- --config "$CONFIG" withdraw-from-nonce-account  --verbose $NONCE "$ADDRESS" 0.001) || \
     echo "$NONCE already closed"

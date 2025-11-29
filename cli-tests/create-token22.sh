@@ -9,10 +9,3 @@ cargo run -p spl-token-cli -- --config "${1:?}" create-token \
   --enable-pause \
   --verbose \
   ./cli-tests/token22.json
-
-cargo run -p spl-token-cli -- --config "${1}" create-token \
-  --decimals 6 \
-  --enable-close \
-  --with-memo 'signed by fireblocks https://github.com/carteraMesh/fireblocks-solana' \
-  --verbose \
-  ./cli-tests/token.json
