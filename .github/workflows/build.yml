@@ -2,13 +2,7 @@ permissions:
   contents: read
 
 env:
-  RPC_URL: ${{ secrets.RPC_URL }}
   RUST_LOG: "info,fireblocks_solana_signer=debug"
-  FIREBLOCKS_ENDPOINT: ${{ vars.FIREBLOCKS_ENDPOINT }}
-  FIREBLOCKS_POLL_TIMEOUT: "30"
-  FIREBLOCKS_POLL_INTERVAL: "3"
-  FIREBLOCKS_DEVNET: "true"
-  FIREBLOCKS_VAULT: "0"
 on:
   workflow_dispatch:
   pull_request:
@@ -19,23 +13,13 @@ name: build
 jobs:
   build:
     runs-on: ${{ vars.RUNNER }}
-    name: build cli
+    name: build clis
     steps:
-      - uses: actions/checkout@v4
+      - name: Init
+        uses: carteramesh/ci/.github/actions/rust-init@main
         with:
-          submodules: true
-      - uses: ubicloud/rust-cache@v2
-        with:
-          cache-on-failure: "true"
-          cache-all-crates: "true"
-          workspaces: |
-            . -> target
-      - name: Install rust
-        uses: dtolnay/rust-toolchain@stable
-      - name: install deps
-        run: |
-          sudo apt-get install -y libgpgme-dev libhidapi-dev libudev-dev
-      - uses: CarteraMesh/fireblocks-config-action@v1
+          ubuntu_packages: "libhidapi-dev libudev-dev libgpgme-dev"
+      - uses: CarteraMesh/fireblocks-config-action@main
         id: config
         with:
           fireblocks-secret: |
@@ -43,6 +27,7 @@ jobs:
           fireblocks-api-key: ${{ secrets.FIREBLOCKS_API_KEY }}
           fireblocks-endpoint: ${{ vars.FIREBLOCKS_ENDPOINT }}
           solana-rpc-url: ${{ secrets.RPC_URL }}
+          commitment: finalized
       - name: test clap-utils
         run: |
           cargo test -p solana-clap-utils --lib --tests -- --nocapture
@@ -54,5 +39,6 @@ jobs:
           cargo build
       - name: test
         run: |
-          echo "using ${steps.config.outputs.solana-config-path}"
-          ./scripts/test.sh "${{ steps.config.outputs.solana-config-path }}"
+          echo "using ${{ steps.config.outputs.solana-config-path }}"
+          cat "${{ steps.config.outputs.solana-config-path }}"
+          ./cli-tests/test.sh "${{ steps.config.outputs.solana-config-path }}"

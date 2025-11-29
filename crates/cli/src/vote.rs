@@ -14,7 +14,6 @@ use {
         stake::check_current_authority,
     },
     clap::{value_t_or_exit, App, Arg, ArgMatches, SubCommand},
-    solana_account::Account,
     solana_clap_utils::{
         compute_budget::{compute_unit_price_arg, ComputeUnitLimit, COMPUTE_UNIT_PRICE_ARG},
         fee_payer::{fee_payer_arg, FEE_PAYER_ARG},
@@ -29,19 +28,18 @@ use {
         display::build_balance_message, return_signers_with_config, CliEpochVotingHistory,
         CliLandedVote, CliVoteAccount, ReturnSignersConfig,
     },
+    solana_client::{
+        nonce_utils::blockhash_query::BlockhashQuery, rpc_client::RpcClient,
+        rpc_config::RpcGetVoteAccountsConfig,
+    },
     solana_commitment_config::CommitmentConfig,
-    solana_message::Message,
-    solana_pubkey::Pubkey,
     solana_remote_wallet::remote_wallet::RemoteWalletManager,
-    solana_rpc_client::rpc_client::RpcClient,
-    solana_rpc_client_api::config::RpcGetVoteAccountsConfig,
-    solana_rpc_client_nonce_utils::blockhash_query::BlockhashQuery,
+    solana_sdk::{account::Account, message::Message, pubkey::Pubkey, transaction::Transaction},
     solana_system_interface::error::SystemError,
-    solana_transaction::Transaction,
-    solana_vote_program::{
-        vote_error::VoteError,
-        vote_instruction::{self, withdraw, CreateVoteAccountConfig},
-        vote_state::{
+    solana_vote_interface::{
+        error::VoteError,
+        instruction::{self as vote_instruction, withdraw, CreateVoteAccountConfig},
+        state::{
             VoteAuthorize, VoteInit, VoteStateV3, VoteStateVersions, VOTE_CREDITS_MAXIMUM_PER_SLOT,
         },
     },
@@ -466,7 +464,7 @@ pub fn parse_create_vote_account(
     let allow_unsafe = matches.is_present("allow_unsafe_authorized_withdrawer");
     let sign_only = matches.is_present(SIGN_ONLY_ARG.name);
     let dump_transaction_message = matches.is_present(DUMP_TRANSACTION_MESSAGE.name);
-    let blockhash_query = BlockhashQuery::new_from_matches(matches);
+    let blockhash_query = crate::new_from_matches(matches);
     let nonce_account = pubkey_of_signer(matches, NONCE_ARG.name, wallet_manager)?;
     let memo = matches.value_of(MEMO_ARG.name).map(String::from);
     let (nonce_authority, nonce_authority_pubkey) =
@@ -532,7 +530,7 @@ pub fn parse_vote_authorize(
 
     let sign_only = matches.is_present(SIGN_ONLY_ARG.name);
     let dump_transaction_message = matches.is_present(DUMP_TRANSACTION_MESSAGE.name);
-    let blockhash_query = BlockhashQuery::new_from_matches(matches);
+    let blockhash_query = crate::new_from_matches(matches);
     let nonce_account = pubkey_of(matches, NONCE_ARG.name);
     let memo = matches.value_of(MEMO_ARG.name).map(String::from);
     let (nonce_authority, nonce_authority_pubkey) =
@@ -594,7 +592,7 @@ pub fn parse_vote_update_validator(
 
     let sign_only = matches.is_present(SIGN_ONLY_ARG.name);
     let dump_transaction_message = matches.is_present(DUMP_TRANSACTION_MESSAGE.name);
-    let blockhash_query = BlockhashQuery::new_from_matches(matches);
+    let blockhash_query = crate::new_from_matches(matches);
     let nonce_account = pubkey_of(matches, NONCE_ARG.name);
     let memo = matches.value_of(MEMO_ARG.name).map(String::from);
     let (nonce_authority, nonce_authority_pubkey) =
@@ -640,7 +638,7 @@ pub fn parse_vote_update_commission(
 
     let sign_only = matches.is_present(SIGN_ONLY_ARG.name);
     let dump_transaction_message = matches.is_present(DUMP_TRANSACTION_MESSAGE.name);
-    let blockhash_query = BlockhashQuery::new_from_matches(matches);
+    let blockhash_query = crate::new_from_matches(matches);
     let nonce_account = pubkey_of(matches, NONCE_ARG.name);
     let memo = matches.value_of(MEMO_ARG.name).map(String::from);
     let (nonce_authority, nonce_authority_pubkey) =
@@ -720,7 +718,7 @@ pub fn parse_withdraw_from_vote_account(
 
     let sign_only = matches.is_present(SIGN_ONLY_ARG.name);
     let dump_transaction_message = matches.is_present(DUMP_TRANSACTION_MESSAGE.name);
-    let blockhash_query = BlockhashQuery::new_from_matches(matches);
+    let blockhash_query = crate::new_from_matches(matches);
     let nonce_account = pubkey_of(matches, NONCE_ARG.name);
     let memo = matches.value_of(MEMO_ARG.name).map(String::from);
     let (nonce_authority, nonce_authority_pubkey) =
@@ -811,7 +809,11 @@ pub fn process_create_vote_account(
     let vote_account = config.signers[vote_account];
     let vote_account_pubkey = vote_account.pubkey();
     let vote_account_address = if let Some(seed) = seed {
-        Pubkey::create_with_seed(&vote_account_pubkey, seed, &solana_vote_program::id())?
+        Pubkey::create_with_seed(
+            &vote_account_pubkey,
+            seed,
+            &solana_vote_interface::program::id(),
+        )?
     } else {
         vote_account_pubkey
     };
@@ -902,7 +904,7 @@ pub fn process_create_vote_account(
             rpc_client.get_account_with_commitment(&vote_account_address, config.commitment)
         {
             if let Some(vote_account) = response.value {
-                let err_msg = if vote_account.owner == solana_vote_program::id() {
+                let err_msg = if vote_account.owner == solana_vote_interface::program::id() {
                     format!("Vote account {vote_account_address} already exists")
                 } else {
                     format!(
@@ -914,7 +916,7 @@ pub fn process_create_vote_account(
         }
 
         if let Some(nonce_account) = &nonce_account {
-            let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
+            let nonce_account = solana_client::nonce_utils::get_account_with_commitment(
                 rpc_client,
                 nonce_account,
                 config.commitment,
@@ -1065,7 +1067,7 @@ pub fn process_vote_authorize(
     } else {
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
-            let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
+            let nonce_account = solana_client::nonce_utils::get_account_with_commitment(
                 rpc_client,
                 nonce_account,
                 config.commitment,
@@ -1153,7 +1155,7 @@ pub fn process_vote_update_validator(
     } else {
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
-            let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
+            let nonce_account = solana_client::nonce_utils::get_account_with_commitment(
                 rpc_client,
                 nonce_account,
                 config.commitment,
@@ -1234,7 +1236,7 @@ pub fn process_vote_update_commission(
     } else {
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
-            let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
+            let nonce_account = solana_client::nonce_utils::get_account_with_commitment(
                 rpc_client,
                 nonce_account,
                 config.commitment,
@@ -1268,7 +1270,7 @@ pub(crate) fn get_vote_account(
             CliError::RpcRequestError(format!("{vote_account_pubkey:?} account does not exist"))
         })?;
 
-    if vote_account.owner != solana_vote_program::id() {
+    if vote_account.owner != solana_vote_interface::program::id() {
         return Err(CliError::RpcRequestError(format!(
             "{vote_account_pubkey:?} is not a vote account"
         ))
@@ -1456,7 +1458,7 @@ pub fn process_withdraw_from_vote_account(
     } else {
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
-            let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
+            let nonce_account = solana_client::nonce_utils::get_account_with_commitment(
                 rpc_client,
                 nonce_account,
                 config.commitment,
@@ -1550,11 +1552,12 @@ mod tests {
     use {
         super::*,
         crate::{clap_app::get_clap_app, cli::parse_command},
-        solana_hash::Hash,
-        solana_keypair::{read_keypair_file, write_keypair, Keypair},
-        solana_presigner::Presigner,
-        solana_rpc_client_nonce_utils::blockhash_query,
-        solana_signer::Signer,
+        solana_client::nonce_utils::blockhash_query,
+        solana_sdk::{
+            hash::Hash,
+            signature::{read_keypair_file, write_keypair, Keypair, Signer},
+            signer::presigner::Presigner,
+        },
         tempfile::NamedTempFile,
     };
 
@@ -1991,7 +1994,7 @@ mod tests {
         );
 
         // test init with an authed voter
-        let authed = solana_pubkey::new_rand();
+        let authed = solana_sdk::pubkey::new_rand();
         let (keypair_file, mut tmp_file) = make_tmp_file();
         let keypair = Keypair::new();
         write_keypair(&keypair, tmp_file.as_file_mut()).unwrap();

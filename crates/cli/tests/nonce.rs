@@ -9,13 +9,13 @@ use {
     solana_cli_output::{parse_sign_only_reply_string, OutputFormat},
     solana_commitment_config::CommitmentConfig,
     solana_faucet::faucet::run_local_faucet,
-    solana_hash::Hash,
-    solana_keypair::{keypair_from_seed, Keypair},
-    solana_native_token::LAMPORTS_PER_SOL,
-    solana_pubkey::Pubkey,
-    solana_rpc_client::rpc_client::RpcClient,
-    solana_rpc_client_nonce_utils::blockhash_query::{self, BlockhashQuery},
-    solana_signer::Signer,
+    solana_sdk::hash::Hash,
+    solana_sdk::signature::{keypair_from_seed, Keypair},
+    solana_sdk::native_token::LAMPORTS_PER_SOL,
+    solana_sdk::pubkey::Pubkey,
+    solana_client::rpc_client::RpcClient,
+    solana_client::nonce_utils::blockhash_query::{self, BlockhashQuery},
+    solana_sdk::signature::Signer,
     solana_streamer::socket::SocketAddrSpace,
     solana_system_interface::program as system_program,
     solana_test_validator::TestValidator,
@@ -137,7 +137,7 @@ fn test_nonce(seed: Option<String>, use_nonce_authority: bool, compute_unit_pric
     assert_ne!(first_nonce, third_nonce);
 
     // Withdraw from nonce account
-    let payee_pubkey = solana_pubkey::new_rand();
+    let payee_pubkey = solana_sdk::pubkey::new_rand();
     config_payer.signers = authorized_signers;
     config_payer.command = CliCommand::WithdrawFromNonceAccount {
         nonce_account,
@@ -295,12 +295,12 @@ fn test_create_account_with_seed() {
     check_balance!(0, &rpc_client, &to_address);
 
     // Fetch nonce hash
-    let nonce_hash = solana_rpc_client_nonce_utils::get_account_with_commitment(
+    let nonce_hash = solana_client::nonce_utils::get_account_with_commitment(
         &rpc_client,
         &nonce_address,
         CommitmentConfig::processed(),
     )
-    .and_then(|ref a| solana_rpc_client_nonce_utils::data_from_account(a))
+    .and_then(|ref a| solana_client::nonce_utils::data_from_account(a))
     .unwrap()
     .blockhash();
 

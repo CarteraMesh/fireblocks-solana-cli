@@ -28,21 +28,25 @@ use {
         CliSignatureVerificationStatus, CliTransaction, CliTransactionConfirmation, OutputFormat,
         ReturnSignersConfig,
     },
+    solana_client::{
+        nonce_utils::blockhash_query::BlockhashQuery, rpc_client::RpcClient,
+        rpc_config::RpcTransactionConfig,
+    },
     solana_commitment_config::CommitmentConfig,
-    solana_message::Message,
-    solana_offchain_message::OffchainMessage,
-    solana_pubkey::Pubkey,
     solana_remote_wallet::remote_wallet::RemoteWalletManager,
-    solana_rpc_client::rpc_client::RpcClient,
-    solana_rpc_client_api::config::RpcTransactionConfig,
-    solana_rpc_client_nonce_utils::blockhash_query::BlockhashQuery,
+    solana_sdk::{
+        message::Message,
+        offchain_message::OffchainMessage,
+        pubkey::Pubkey,
+        signature::Signature,
+        transaction::{Transaction, VersionedTransaction},
+    },
     solana_sdk_ids::{stake, system_program},
-    solana_signature::Signature,
     solana_system_interface::{error::SystemError, instruction as system_instruction},
-    solana_transaction::{versioned::VersionedTransaction, Transaction},
-    solana_transaction_status::{
-        EncodableWithMeta, EncodedConfirmedTransactionWithStatusMeta, EncodedTransaction,
-        TransactionBinaryEncoding, UiTransactionEncoding,
+    solana_transaction_status::EncodableWithMeta,
+    solana_transaction_status_client_types::{
+        EncodedConfirmedTransactionWithStatusMeta, EncodedTransaction, TransactionBinaryEncoding,
+        UiTransactionEncoding,
     },
     std::{fmt::Write as FmtWrite, fs::File, io::Write, rc::Rc, str::FromStr},
 };
@@ -391,7 +395,7 @@ fn resolve_derived_address_program_id(matches: &ArgMatches<'_>, arg_name: &str) 
         match upper.as_str() {
             "NONCE" | "SYSTEM" => Some(system_program::id()),
             "STAKE" => Some(stake::id()),
-            "VOTE" => Some(solana_vote_program::id()),
+            "VOTE" => Some(solana_vote_interface::program::id()),
             _ => pubkey_of(matches, arg_name),
         }
     })
@@ -550,7 +554,7 @@ pub fn parse_transfer(
     let sign_only = matches.is_present(SIGN_ONLY_ARG.name);
     let dump_transaction_message = matches.is_present(DUMP_TRANSACTION_MESSAGE.name);
     let no_wait = matches.is_present("no_wait");
-    let blockhash_query = BlockhashQuery::new_from_matches(matches);
+    let blockhash_query = crate::new_from_matches(matches);
     let nonce_account = pubkey_of_signer(matches, NONCE_ARG.name, wallet_manager)?;
     let (nonce_authority, nonce_authority_pubkey) =
         signer_of(matches, NONCE_AUTHORITY_ARG.name, wallet_manager)?;
@@ -973,7 +977,7 @@ pub fn process_transfer(
         )
     } else {
         if let Some(nonce_account) = &nonce_account {
-            let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
+            let nonce_account = solana_client::nonce_utils::get_account_with_commitment(
                 rpc_client,
                 nonce_account,
                 config.commitment,

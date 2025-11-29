@@ -16,7 +16,6 @@ use {
     bip39::{Language, Mnemonic, MnemonicType, Seed},
     clap::{App, AppSettings, Arg, ArgMatches, SubCommand},
     log::*,
-    solana_account::{state_traits::StateMut, Account},
     solana_account_decoder::{UiAccountEncoding, UiDataSliceConfig},
     solana_clap_utils::{
         self,
@@ -35,41 +34,38 @@ use {
         CliUpgradeableProgramMigrated, CliUpgradeablePrograms, ReturnSignersConfig,
     },
     solana_client::{
+        client_error::ClientErrorKind,
         connection_cache::ConnectionCache,
+        nonce_utils::blockhash_query::BlockhashQuery,
+        rpc_client::RpcClient,
+        rpc_config::{RpcAccountInfoConfig, RpcProgramAccountsConfig},
+        rpc_filter::{Memcmp, RpcFilterType},
+        rpc_request::MAX_MULTIPLE_ACCOUNTS,
         send_and_confirm_transactions_in_parallel::{
             send_and_confirm_transactions_in_parallel_blocking_v2, SendAndConfirmConfigV2,
         },
         tpu_client::{TpuClient, TpuClientConfig},
     },
     solana_commitment_config::CommitmentConfig,
-    solana_instruction::{error::InstructionError, Instruction},
-    solana_keypair::{keypair_from_seed, read_keypair_file, Keypair},
     solana_loader_v3_interface::{
         get_program_data_address, instruction as loader_v3_instruction,
         state::UpgradeableLoaderState,
     },
-    solana_message::Message,
-    solana_packet::PACKET_DATA_SIZE,
     solana_program_runtime::{
         execution_budget::SVMTransactionExecutionBudget, invoke_context::InvokeContext,
     },
-    solana_pubkey::Pubkey,
     solana_remote_wallet::remote_wallet::RemoteWalletManager,
-    solana_rpc_client::rpc_client::RpcClient,
-    solana_rpc_client_api::{
-        client_error::ErrorKind as ClientErrorKind,
-        config::{RpcAccountInfoConfig, RpcProgramAccountsConfig},
-        filter::{Memcmp, RpcFilterType},
-        request::MAX_MULTIPLE_ACCOUNTS,
-    },
-    solana_rpc_client_nonce_utils::blockhash_query::BlockhashQuery,
     solana_sbpf::{elf::Executable, verifier::RequisiteVerifier},
+    solana_sdk::{
+        account::{state_traits::StateMut, Account},
+        instruction::{Instruction, InstructionError},
+        message::Message,
+        pubkey::Pubkey,
+        signature::{keypair_from_seed, read_keypair_file, Keypair, Signature, Signer},
+        transaction::{Transaction, TransactionError},
+    },
     solana_sdk_ids::{bpf_loader, bpf_loader_deprecated, bpf_loader_upgradeable, compute_budget},
-    solana_signature::Signature,
-    solana_signer::Signer,
     solana_system_interface::{error::SystemError, MAX_PERMITTED_DATA_LENGTH},
-    solana_transaction::Transaction,
-    solana_transaction_error::TransactionError,
     std::{
         fs::File,
         io::{Read, Write},
@@ -82,6 +78,7 @@ use {
     },
 };
 
+pub const PACKET_DATA_SIZE: usize = 1280 - 40 - 8;
 pub const CLOSE_PROGRAM_WARNING: &str = "WARNING! Closed programs cannot be recreated at the same \
                                          program id. Once a program is closed, it can never be \
                                          invoked again. To proceed with closing, rerun the \
@@ -766,7 +763,7 @@ pub fn parse_program_subcommand(
         ("upgrade", Some(matches)) => {
             let sign_only = matches.is_present(SIGN_ONLY_ARG.name);
             let dump_transaction_message = matches.is_present(DUMP_TRANSACTION_MESSAGE.name);
-            let blockhash_query = BlockhashQuery::new_from_matches(matches);
+            let blockhash_query = crate::new_from_matches(matches);
             let buffer_pubkey = pubkey_of_signer(matches, "buffer", wallet_manager)
                 .unwrap()
                 .unwrap();
@@ -885,7 +882,7 @@ pub fn parse_program_subcommand(
         ("set-upgrade-authority", Some(matches)) => {
             let sign_only = matches.is_present(SIGN_ONLY_ARG.name);
             let dump_transaction_message = matches.is_present(DUMP_TRANSACTION_MESSAGE.name);
-            let blockhash_query = BlockhashQuery::new_from_matches(matches);
+            let blockhash_query = crate::new_from_matches(matches);
             let (upgrade_authority_signer, upgrade_authority_pubkey) =
                 signer_of(matches, "upgrade_authority", wallet_manager)?;
             let program_pubkey = pubkey_of(matches, "program_id").unwrap();
@@ -1715,7 +1712,10 @@ fn process_write_buffer(
     } else if let Some(pubkey) = buffer_pubkey {
         (None, pubkey)
     } else {
-        (Some(&buffer_keypair as &dyn Signer), buffer_keypair.pubkey())
+        (
+            Some(&buffer_keypair as &dyn Signer),
+            buffer_keypair.pubkey(),
+        )
     };
 
     let buffer_program_data = fetch_buffer_program_data(
@@ -3265,9 +3265,6 @@ fn send_deploy_messages(
             let blockhash = rpc_client.get_latest_blockhash()?;
             let mut signers = final_signers.to_vec();
             signers.push(fee_payer_signer);
-            //            #[cfg(feature = "fireblocks")]
-            //            crate::fireblocks_sign!(final_tx, &signers, blockhash);
-            //          #[cfg(not(feature = "fireblocks"))]
             final_tx.try_sign(&signers, blockhash)?;
             return Ok(Some(
                 rpc_client
@@ -3340,8 +3337,7 @@ mod tests {
         },
         serde_json::Value,
         solana_cli_output::OutputFormat,
-        solana_hash::Hash,
-        solana_keypair::write_keypair_file,
+        solana_sdk::{hash::Hash, signature::write_keypair_file},
     };
 
     fn make_tmp_path(name: &str) -> String {

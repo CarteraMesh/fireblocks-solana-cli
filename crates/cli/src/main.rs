@@ -15,12 +15,11 @@ use {
         display::{println_name_value, println_name_value_or},
         OutputFormat,
     },
+    solana_client::rpc_config::RpcSendTransactionConfig,
     solana_remote_wallet::remote_wallet::RemoteWalletManager,
-    solana_rpc_client_api::config::RpcSendTransactionConfig,
-    solana_tpu_client::tpu_client::DEFAULT_TPU_ENABLE_UDP,
     std::{collections::HashMap, error, path::PathBuf, rc::Rc, time::Duration},
 };
-
+pub const DEFAULT_TPU_ENABLE_UDP: bool = false;
 fn parse_settings(matches: &ArgMatches<'_>) -> Result<bool, Box<dyn error::Error>> {
     let parse_args = match matches.subcommand() {
         ("config", Some(matches)) => {

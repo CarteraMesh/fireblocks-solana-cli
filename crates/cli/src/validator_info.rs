@@ -8,7 +8,6 @@ use {
     clap::{App, AppSettings, Arg, ArgMatches, SubCommand},
     reqwest::blocking::Client,
     serde_json::{Map, Value},
-    solana_account::Account,
     solana_account_decoder::validator_info::{
         self, ValidatorInfo, MAX_LONG_FIELD_LENGTH, MAX_SHORT_FIELD_LENGTH, MAX_VALIDATOR_INFO,
     },
@@ -20,17 +19,19 @@ use {
         keypair::DefaultSigner,
     },
     solana_cli_output::{CliValidatorInfo, CliValidatorInfoVec},
+    solana_client::rpc_client::RpcClient,
     solana_config_interface::{
         instruction::{self as config_instruction},
         state::{get_config_data, ConfigKeys},
     },
-    solana_keypair::Keypair,
-    solana_message::Message,
-    solana_pubkey::Pubkey,
     solana_remote_wallet::remote_wallet::RemoteWalletManager,
-    solana_rpc_client::rpc_client::RpcClient,
-    solana_signer::Signer,
-    solana_transaction::Transaction,
+    solana_sdk::{
+        account::Account,
+        message::Message,
+        pubkey::Pubkey,
+        signature::{Keypair, Signer},
+        transaction::Transaction,
+    },
     std::{error, rc::Rc},
 };
 
@@ -509,7 +510,7 @@ mod tests {
 
     #[test]
     fn test_verify_keybase_username_not_string() {
-        let pubkey = solana_pubkey::new_rand();
+        let pubkey = solana_sdk::pubkey::new_rand();
         let value = Value::Bool(true);
 
         assert_eq!(
@@ -574,7 +575,7 @@ mod tests {
 
     #[test]
     fn test_parse_validator_info() {
-        let pubkey = solana_pubkey::new_rand();
+        let pubkey = solana_sdk::pubkey::new_rand();
         let keys = vec![(validator_info::id(), false), (pubkey, true)];
         let config = ConfigKeys { keys };
 
@@ -603,7 +604,7 @@ mod tests {
         assert!(parse_validator_info(
             &Pubkey::default(),
             &Account {
-                owner: solana_pubkey::new_rand(),
+                owner: solana_sdk::pubkey::new_rand(),
                 ..Account::default()
             }
         )

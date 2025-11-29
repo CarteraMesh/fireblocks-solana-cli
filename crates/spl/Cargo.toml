@@ -10,68 +10,56 @@ homepage = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 
-[build-dependencies]
-walkdir = "2"
+[[bin]]
+name = "spl-token"
+path = "src/main.rs"
 
 [features]
-default = [ "fireblocks" ]
+default = ["fireblocks"]
 fireblocks = ["solana-clap-v3-utils/fireblocks"]
-gpg = [ "solana-clap-v3-utils/gpg" ]
+gpg = ["solana-clap-v3-utils/gpg"]
 
 [dependencies]
-base64 = "0.22.1"
+base64 = { workspace = true }
 clap = "3.2.23"
-console = "0.16.1"
-futures = "0.3"
-serde = "1.0.219"
-serde_derive = "1.0.103"
-serde_json = "1.0.145"
-solana-account = { workspace = true }
+console = { workspace = true }
+futures = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
 solana-account-decoder = { workspace = true }
-solana-clap-v3-utils =  { workspace = true  }
+solana-clap-v3-utils = { workspace = true }
 solana-cli-config = { workspace = true }
 solana-cli-output = { workspace = true }
 solana-client = { workspace = true }
 solana-commitment-config = { workspace = true }
-solana-instruction = { workspace = true }
-solana-hash = { workspace = true }
 solana-logger = { workspace = true }
-solana-keypair = { workspace = true }
-solana-message = { workspace = true }
-solana-native-token = { workspace = true }
-solana-signer = { workspace = true }
-solana-pubkey = { workspace = true }
-solana-program-option = { workspace = true }
-solana-program-pack = { workspace = true }
 solana-remote-wallet = { workspace = true }
+solana-sdk = { workspace = true }
 solana-system-interface = { workspace = true }
-solana-transaction-status = { workspace = true }
 spl-associated-token-account-interface = { version = "2.0.0" }
 spl-pod = { version = "0.7.1" }
-spl-token-interface = "2.0.0"
+spl-token-2022 = { version = "10.0.0", features = ["no-entrypoint"] }
 spl-token-2022-interface = { version = "2.0.0" }
-spl-token-2022 = { version = "10.0.0",  features = ["no-entrypoint"] }
 spl-token-client = { version = "0.18.0" }
-spl-token-confidential-transfer-proof-generation = { version = "0.5.1"  }
-spl-token-metadata-interface = { version = "0.8.0" }
+spl-token-confidential-transfer-proof-generation = { version = "0.5.1" }
 spl-token-group-interface = { version = "0.7.0" }
-spl-memo-interface = { workspace = true }
+spl-token-interface = "2.0.0"
+spl-token-metadata-interface = { version = "0.8.0" }
 strum = "0.27"
 strum_macros = "0.27"
 tokio = "1.48"
 
+# [build-dependencies]
+# walkdir = "2"
+
 [dev-dependencies]
-solana-nonce =  { workspace = true }
-solana-sdk-ids = { workspace = true }
-solana-test-validator =  { workspace = true }
 assert_cmd = "2.1.1"
 libtest-mimic = "0.8"
-serial_test = "3.2.0"
-tempfile = "3.23.0"
-
-[[bin]]
-name = "spl-token"
-path = "src/main.rs"
+# serial_test = "3.2.0"
+solana-nonce = { workspace = true }
+solana-sdk-ids = { workspace = true }
+solana-test-validator = { workspace = true }
+tempfile = { workspace = true }
 
 [[test]]
 name = "command"

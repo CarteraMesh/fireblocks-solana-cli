@@ -25,12 +25,13 @@ use {
         OutputFormat, QuietDisplay, ReturnSignersConfig, VerboseDisplay,
     },
     solana_client::rpc_request::TokenAccountsFilter,
-    solana_instruction::AccountMeta,
-    solana_keypair::Keypair,
-    solana_program_option::COption,
-    solana_pubkey::Pubkey,
     solana_remote_wallet::remote_wallet::RemoteWalletManager,
-    solana_signer::Signer,
+    solana_sdk::{
+        instruction::AccountMeta,
+        program_option::COption,
+        pubkey::Pubkey,
+        signature::{Keypair, Signer},
+    },
     solana_system_interface::program as system_program,
     spl_associated_token_account_interface::address::get_associated_token_address_with_program_id,
     spl_pod::optional_keys::OptionalNonZeroPubkey,
@@ -424,9 +425,9 @@ async fn command_create_token(
         println_display(
             config,
             format!(
-                "To initialize metadata inside the mint, please run \
-                `spl-token initialize-metadata {token_pubkey} <YOUR_TOKEN_NAME> <YOUR_TOKEN_SYMBOL> <YOUR_TOKEN_URI>`, \
-                and sign with the mint authority.",
+                "To initialize metadata inside the mint, please run `spl-token \
+                 initialize-metadata {token_pubkey} <YOUR_TOKEN_NAME> <YOUR_TOKEN_SYMBOL> \
+                 <YOUR_TOKEN_URI>`, and sign with the mint authority.",
             ),
         );
     }
@@ -435,7 +436,8 @@ async fn command_create_token(
         println_display(
             config,
             format!(
-                "To initialize group configurations inside the mint, please run `spl-token initialize-group {token_pubkey} <MAX_SIZE>`, and sign with the mint authority.",
+                "To initialize group configurations inside the mint, please run `spl-token \
+                 initialize-group {token_pubkey} <MAX_SIZE>`, and sign with the mint authority.",
             ),
         );
     }
@@ -444,7 +446,9 @@ async fn command_create_token(
         println_display(
             config,
             format!(
-                "To initialize group member configurations inside the mint, please run `spl-token initialize-member {token_pubkey}`, and sign with the mint authority and the group's update authority.",
+                "To initialize group member configurations inside the mint, please run `spl-token \
+                 initialize-member {token_pubkey}`, and sign with the mint authority and the \
+                 group's update authority.",
             ),
         );
     }
@@ -660,8 +664,8 @@ async fn command_update_metadata(
             .await?
     } else {
         return Err(format!(
-            "Attempting to remove field {field:?}, which cannot be removed. \
-            Please re-run the command with a value of \"\" rather than the `--remove` flag."
+            "Attempting to remove field {field:?}, which cannot be removed. Please re-run the \
+             command with a value of \"\" rather than the `--remove` flag."
         )
         .into());
     };
@@ -1394,11 +1398,9 @@ async fn command_transfer(
             if recipient_account_owner == config.program_id && maybe_account_state.is_ok() {
                 if let Ok(memo_transfer) = maybe_account_state?.get_extension::<MemoTransfer>() {
                     if memo_transfer.require_incoming_transfer_memos.into() && memo.is_none() {
-                        return Err(
-                            "Error: Recipient expects a transfer memo, but none was provided. \
-                                    Provide a memo using `--with-memo`."
-                                .into(),
-                        );
+                        return Err("Error: Recipient expects a transfer memo, but none was \
+                                    provided. Provide a memo using `--with-memo`."
+                            .into());
                     }
                 }
 
@@ -1419,8 +1421,11 @@ async fn command_transfer(
             } else if allow_non_system_account_recipient {
                 false
             } else {
-                return Err("Error: The recipient address is not owned by the System Program. \
-                                     Add `--allow-non-system-account-recipient` to complete the transfer.".into());
+                return Err(
+                    "Error: The recipient address is not owned by the System Program. Add \
+                     `--allow-non-system-account-recipient` to complete the transfer."
+                        .into(),
+                );
             }
         }
         // if it doesn't exist, it definitely isn't a token account!
@@ -1428,8 +1433,8 @@ async fn command_transfer(
         else if maybe_recipient_account_data.is_none() && allow_unfunded_recipient {
             false
         } else {
-            return Err("Error: The recipient address is not funded. \
-                        Add `--allow-unfunded-recipient` to complete the transfer."
+            return Err("Error: The recipient address is not funded. Add \
+                        `--allow-unfunded-recipient` to complete the transfer."
                 .into());
         }
     } else {
@@ -1468,11 +1473,9 @@ async fn command_transfer(
                 {
                     if let Ok(memo_transfer) = account_state.get_extension::<MemoTransfer>() {
                         if memo_transfer.require_incoming_transfer_memos.into() && memo.is_none() {
-                            return Err(
-                                "Error: Recipient expects a transfer memo, but none was provided. \
-                                        Provide a memo using `--with-memo`."
-                                    .into(),
-                            );
+                            return Err("Error: Recipient expects a transfer memo, but none was \
+                                        provided. Provide a memo using `--with-memo`."
+                                .into());
                         }
                     }
                 }
@@ -1500,8 +1503,8 @@ async fn command_transfer(
         let fundable_owner = if needs_funding {
             if confidential_transfer_args.is_some() {
                 return Err(
-                    "Error: Recipient's associated token account does not exist. \
-                        Accounts cannot be funded for confidential transfers."
+                    "Error: Recipient's associated token account does not exist. Accounts cannot \
+                     be funded for confidential transfers."
                         .into(),
                 );
             } else if fund_recipient {
@@ -1513,8 +1516,8 @@ async fn command_transfer(
                 Some(recipient)
             } else {
                 return Err(
-                    "Error: Recipient's associated token account does not exist. \
-                                    Add `--fund-recipient` to fund their account"
+                    "Error: Recipient's associated token account does not exist. Add \
+                     `--fund-recipient` to fund their account"
                         .into(),
                 );
             }
@@ -1615,7 +1618,10 @@ async fn command_transfer(
                 .await?
         }
         (Some(_), _, _) => {
-            panic!("Recipient account cannot be created for transfer with fees or confidential transfers");
+            panic!(
+                "Recipient account cannot be created for transfer with fees or confidential \
+                 transfers"
+            );
         }
         (None, Some(fee), None) => {
             token
@@ -2067,7 +2073,12 @@ async fn command_unwrap(
 
         if account_data.lamports == 0 {
             if use_associated_account {
-                return Err("No wrapped SOL in associated account; did you mean to specify an auxiliary address?".to_string().into());
+                return Err(
+                    "No wrapped SOL in associated account; did you mean to specify an auxiliary \
+                     address?"
+                        .to_string()
+                        .into(),
+                );
             } else {
                 return Err(format!("No wrapped SOL in {}", account).into());
             }
@@ -2273,7 +2284,8 @@ async fn command_close_mint(
 
         if mint_supply > 0 {
             return Err(format!(
-                "Mint {} still has {} outstanding tokens; these must be burned before closing the mint.",
+                "Mint {} still has {} outstanding tokens; these must be burned before closing the \
+                 mint.",
                 token_pubkey, mint_supply,
             )
             .into());
@@ -2594,8 +2606,8 @@ async fn command_gc(
                     println_display(
                         config,
                         format!(
-                            "Note: skipping {} due to separate close authority {}; \
-                             revoke authority and rerun gc, or rerun gc with --owner",
+                            "Note: skipping {} due to separate close authority {}; revoke \
+                             authority and rerun gc, or rerun gc with --owner",
                             address, close_authority
                         ),
                     );
@@ -3230,8 +3242,8 @@ async fn command_enable_disable_confidential_transfers(
     let existing_extensions: Vec<ExtensionType> = state_with_extension.get_extension_types()?;
     if !existing_extensions.contains(&ExtensionType::ConfidentialTransferAccount) {
         panic!(
-            "Confidential transfer is not yet configured for this account. \
-        Use `configure-confidential-transfer-account` command instead."
+            "Confidential transfer is not yet configured for this account. Use \
+             `configure-confidential-transfer-account` command instead."
         );
     }
 
@@ -3740,7 +3752,13 @@ pub async fn process_command(
             let ui_multiplier = value_t!(arg_matches, "ui_amount_multiplier", f64).ok();
 
             let transfer_fee = arg_matches.values_of("transfer_fee").map(|mut v| {
-                println_display(config,"transfer-fee has been deprecated and will be removed in a future release. Please specify --transfer-fee-basis-points and --transfer-fee-maximum-fee with a UI amount".to_string());
+                println_display(
+                    config,
+                    "transfer-fee has been deprecated and will be removed in a future release. \
+                     Please specify --transfer-fee-basis-points and --transfer-fee-maximum-fee \
+                     with a UI amount"
+                        .to_string(),
+                );
                 (
                     v.next()
                         .unwrap()
@@ -4002,8 +4020,8 @@ pub async fn process_command(
                     .unwrap();
             if minimum_signers as usize > multisig_members.len() {
                 eprintln!(
-                    "error: MINIMUM_SIGNERS cannot be greater than the number \
-                          of MULTISIG_MEMBERs passed"
+                    "error: MINIMUM_SIGNERS cannot be greater than the number of MULTISIG_MEMBERs \
+                     passed"
                 );
                 exit(1);
             }
@@ -4088,7 +4106,12 @@ pub async fn process_command(
             let no_recipient_is_ata_owner =
                 arg_matches.is_present("no_recipient_is_ata_owner") || !recipient_is_ata_owner;
             if recipient_is_ata_owner {
-                println_display(config, "recipient-is-ata-owner is now the default behavior. The option has been deprecated and will be removed in a future release.".to_string());
+                println_display(
+                    config,
+                    "recipient-is-ata-owner is now the default behavior. The option has been \
+                     deprecated and will be removed in a future release."
+                        .to_string(),
+                );
             }
             let use_unchecked_instruction = arg_matches.is_present("use_unchecked_instruction");
             let expected_fee = arg_matches.get_one::<Amount>("expected_fee").copied();

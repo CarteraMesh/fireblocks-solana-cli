@@ -9,10 +9,10 @@ use {
     solana_cli_output::{
         CliEpochRewardsMetadata, CliInflation, CliKeyedEpochReward, CliKeyedEpochRewards,
     },
-    solana_clock::{Epoch, Slot, UnixTimestamp},
-    solana_pubkey::Pubkey,
+    solana_sdk::clock::{Epoch, Slot, UnixTimestamp},
+    solana_sdk::pubkey::Pubkey,
     solana_remote_wallet::remote_wallet::RemoteWalletManager,
-    solana_rpc_client::rpc_client::RpcClient,
+    solana_client::rpc_client::RpcClient,
     std::{collections::HashMap, rc::Rc},
 };
 

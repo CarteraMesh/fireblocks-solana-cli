@@ -1,34 +1,34 @@
 [workspace.package]
 edition = "2021"
 license = "MIT"
-repository = "https://github.com/carteraMesh/fireblocks-solana-cli"
+repository = "https://github.com/carteraMesh/fireblocks-solana"
 version = "3.0.11"
-authors = ["me"]
-homepage = "https://github.com/carteraMesh/fireblocks-solana-cli"
+authors = ["gh@cartera-mesh.com"]
+homepage = "https://github.com/carteraMesh/fireblocks-solana"
 
 [workspace]
 members = ["crates/*"]
 resolver = "2"
 
 [workspace.dependencies]
-anyhow = "1.0.99"
-agave-feature-set = { version = "3.0" }
-agave-syscalls = { version = "3.0" }
+anyhow = "1"
+agave-feature-set = { version = "=3.0.11" }
+agave-syscalls = { version = "=3.0.11" }
 bincode = "1.3.3"
-bs58 = { version = "0.5.1", default-features = false }
-clap = "2.33.1"
+base64 = "0.22.1"
 console = "0.16.0"
 const_format = { version = "0.2"}
 criterion-stats = { version = "0.3"}
 crossbeam-channel = { version = "0.5"}
 ctrlc = { version = "3", features = ["termination"] }
+futures = "0.3"
 hex = { version = "0.4"}
 humantime = { version  = "2"}
 num-traits = { version = "0.2"}
 pretty-hex = {  version = "0.4"}
 reqwest = { version = "0.12.23" , features = ["blocking", "brotli", "deflate", "gzip", "rustls-tls", "json"] }
 semver = {  version = "1"}
-home = { version = "=0.5.11"}
+home = { version = "0.5"}
 
 dirs-next = "2.0.0"
 chrono = { version = "0.4.41", default-features = false }
@@ -40,79 +40,50 @@ serde_derive = "1.0.219" # must match the serde version, see https://github.com/
 serde_json = "1.0.142"
 serde_with = { version = "3.14.0", default-features = false }
 serde_yaml = "0.9.34"
+tracing = "0.1"
 thiserror = "2"
 tiny-bip39 = "0.8.2"
 uriparse = "0.6.4"
 url = "2.5.4"
 rpassword = "7.4"
 
-solana-account = "3.0"
-solana-account-decoder = { version = "3.0" }
-solana-address-lookup-table-interface = "3.0"
-solana-borsh = "3.0"
-solana-client = { version = "3.0" }
-solana-cli-output = { version = "3.0" }
-solana-clock = "3.0"
-solana-cluster-type = "3.0"
-solana-commitment-config = "3.0"
-solana-compute-budget-interface = "3.0"
+solana-account-decoder = { version = "=3.0.11" }
+solana-address-lookup-table-interface = "=3.0.0"
+solana-client = { version = "=3.0.11" }
+solana-cli-output = { version = "=3.0.11" }
+solana-cluster-type = "3.0.0"
+solana-commitment-config = "=3.0.0"
+solana-compute-budget-interface = "=3.0.0"
 solana-config-interface = "2.0.0"
-solana-connection-cache = { version = "3.0", default-features = false }
-solana-derivation-path = "3.0"
-solana-epoch-schedule = "3.0"
-solana-faucet = { version = "3.0" }
-solana-feature-gate-interface = "3.0"
-solana-fee-calculator = "3.0"
-solana-fee-structure = "3.0"
-solana-hash = "3.0"
-solana-instruction = "3.0"
-solana-keypair = "3.0"
+solana-connection-cache = { version = "=3.0.11", default-features = false }
+solana-derivation-path = "3.0.0"
+solana-epoch-rewards-hasher = { version = "=3.0.0" }
+#solana-epoch-schedule = "=3.0.11"
+solana-faucet = { version = "=3.0.11" }
+solana-feature-gate-interface = "=3.0.0"
 solana-loader-v3-interface = "6.1.0"
 solana-loader-v4-interface = "3.1.0"
-solana-loader-v4-program = { version = "3.0" }
-solana-logger = "3.0"
-solana-message = "3.0"
-solana-native-token = "3.0"
-solana-nonce = "3.0"
-solana-nonce-account = "3.0"
-solana-offchain-message = "3.0"
-solana-packet = "3.0"
-solana-presigner = "3.0"
-solana-program-runtime = {  version = "3.0" }
-solana-program-option = "3.0"
-solana-program-pack = "3.0"
-solana-pubkey = { version = "3.0", default-features = false }
-solana-pubsub-client = { version = "3.0" }
-solana-quic-client = { version = "3.0" }
-solana-remote-wallet = {version = "3.0", default-features = false }
-solana-rent = "3.0"
-solana-rpc = { version = "3.0" }
-solana-rpc-client = { version = "3.0", default-features = false }
-solana-rpc-client-api = {version = "3.0" }
-solana-rpc-client-nonce-utils = { version = "3.0" }
+solana-loader-v4-program = { version = "=3.0.11" }
+solana-logger = "=3.0.0"
+solana-nonce = "=3.0.0"
+solana-nonce-account = "=3.0.0"
+solana-program-runtime = { version = "=3.0.11" }
+solana-remote-wallet = {version = "=3.0.11", default-features = false }
+solana-rpc = { version = "=3.0.11" }
 solana-sbpf = { version = "=0.12.2", default-features = false }
-solana-sdk-ids = "3.0"
-solana-sha256-hasher = "3.0"
-solana-seed-derivable = "3.0"
-solana-seed-phrase = "3.0"
-solana-signature = { version = "3.0", default-features = false }
-solana-signer = "3.0"
-solana-slot-history = "3.0"
-solana-stake-interface = { version = "2.0.1" }
-solana-streamer = { version = "3.0" }
-solana-system-interface = "2.0"
-solana-sysvar = "3.0"
-solana-test-validator = { version = "3.0" }
-solana-tps-client = { version = "3.0" }
-solana-tpu-client = { version = "3.0", default-features = false }
-solana-transaction = "3.0"
-solana-transaction-error = "3.0"
-solana-transaction-status = { version = "3.0" }
-solana-transaction-status-client-types = { version = "3.0" }
-solana-udp-client = { version = "3.0" }
-solana-version = { version = "3.0" }
-solana-vote-program = { version = "3.0", default-features = false }
-solana-zk-sdk = "4.0.0"
+solana-sdk = { version = "=3.0.0", features = ["full", "borsh"] }
+solana-sdk-ids = "=3.0.0"
+solana-seed-derivable = "=3.0.0"
+solana-stake-interface = { version = "2",  features = ["bincode"]}
+solana-streamer = { version = "=3.0.11" }
+solana-system-interface = { version = "3", features = ["bincode"] }
+solana-test-validator = { version = "=3.0.11" }
+solana-tps-client = { version = "=3.0.11" }
+solana-transaction-status = { version = "=3.0.11" }
+solana-transaction-status-client-types = { version = "=3.0.11" }
+solana-version = { version = "=3.0.11" }
+solana-vote-interface = { version = "3" , features = [ "bincode"] }
+solana-zk-sdk = "4"
 spl-memo-interface = { version = "=2.0.0" }
 
 solana-clap-utils = { path = "crates/clap-utils", version = "=3.0.11" }
@@ -123,7 +94,7 @@ assert_matches = "1.5.0"
 tempfile = "3.20.0"
 test-case = "3.3.1"
 
-fireblocks-solana-signer = { version = "3.0" }
+fireblocks-solana-signer = { version = "3.0.2-rc.1" }
 
 [workspace.lints.rust]
 warnings = "deny"

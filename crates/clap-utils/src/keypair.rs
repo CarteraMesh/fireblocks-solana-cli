@@ -19,22 +19,23 @@ use {
     clap::ArgMatches,
     rpassword::prompt_password,
     solana_derivation_path::{DerivationPath, DerivationPathError},
-    solana_hash::Hash,
-    solana_keypair::{
-        keypair_from_seed, keypair_from_seed_phrase_and_passphrase, read_keypair,
-        read_keypair_file, seed_derivable::keypair_from_seed_and_derivation_path, Keypair,
-    },
-    solana_message::Message,
-    solana_presigner::Presigner,
-    solana_pubkey::Pubkey,
     solana_remote_wallet::{
         locator::{Locator as RemoteWalletLocator, LocatorError as RemoteWalletLocatorError},
         remote_keypair::generate_remote_keypair,
         remote_wallet::{maybe_wallet_manager, RemoteWalletError, RemoteWalletManager},
     },
-    solana_seed_phrase::generate_seed_from_seed_phrase_and_passphrase,
-    solana_signature::Signature,
-    solana_signer::{null_signer::NullSigner, Signer},
+    solana_sdk::{
+        hash::Hash,
+        message::Message,
+        pubkey::Pubkey,
+        signature::{
+            keypair::keypair_from_seed_and_derivation_path, keypair_from_seed,
+            keypair_from_seed_phrase_and_passphrase, null_signer::NullSigner, read_keypair,
+            read_keypair_file, Keypair, Signature, Signer,
+        },
+        signer::presigner::Presigner,
+    },
+    solana_sdk::signer::keypair::generate_seed_from_seed_phrase_and_passphrase,
     std::{
         cell::RefCell,
         convert::TryFrom,
@@ -205,7 +206,7 @@ impl DefaultSigner {
     /// use clap::{App, Arg, value_t_or_exit};
     /// use solana_clap_utils::keypair::{DefaultSigner, signer_from_path};
     /// use solana_clap_utils::offline::OfflineArgs;
-    /// use solana_signer::Signer;
+    /// use solana_sdk::signature::Signer;
     ///
     /// let clap_app = App::new("my-program")
     ///     // The argument we'll parse as a signer "path"
@@ -1131,8 +1132,8 @@ mod tests {
         crate::offline::OfflineArgs,
         assert_matches::assert_matches,
         clap::{value_t_or_exit, App, Arg},
-        solana_keypair::write_keypair_file,
         solana_remote_wallet::{locator::Manufacturer, remote_wallet::initialize_wallet_manager},
+        solana_sdk::signature::write_keypair_file,
         solana_system_interface::instruction::transfer,
         tempfile::{NamedTempFile, TempDir},
     };

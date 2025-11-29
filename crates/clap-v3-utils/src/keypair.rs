@@ -21,19 +21,21 @@ use {
     clap::ArgMatches,
     rpassword::prompt_password,
     solana_derivation_path::DerivationPath,
-    solana_hash::Hash,
-    solana_keypair::{read_keypair, read_keypair_file, Keypair},
-    solana_message::Message,
-    solana_presigner::Presigner,
-    solana_pubkey::Pubkey,
     solana_remote_wallet::{
         remote_keypair::generate_remote_keypair,
         remote_wallet::{maybe_wallet_manager, RemoteWalletError, RemoteWalletManager},
     },
-    solana_seed_derivable::SeedDerivable,
-    solana_seed_phrase::generate_seed_from_seed_phrase_and_passphrase,
-    solana_signature::Signature,
-    solana_signer::{null_signer::NullSigner, EncodableKey, EncodableKeypair, Signer},
+    solana_sdk::{
+        hash::Hash,
+        message::Message,
+        pubkey::Pubkey,
+        signature::{
+            null_signer::NullSigner, read_keypair, read_keypair_file, EncodableKey,
+            EncodableKeypair, Keypair, Signature, Signer,
+        },
+        signer::{presigner::Presigner, SeedDerivable},
+    },
+    solana_sdk::signer::keypair::generate_seed_from_seed_phrase_and_passphrase,
     std::{
         cell::RefCell,
         error,
@@ -203,7 +205,7 @@ impl DefaultSigner {
     /// use clap::{Arg, Command};
     /// use solana_clap_v3_utils::keypair::{DefaultSigner, signer_from_path};
     /// use solana_clap_v3_utils::offline::OfflineArgs;
-    /// use solana_signer::Signer;
+    /// use solana_sdk::signature::Signer;
     ///
     /// let clap_app = Command::new("my-program")
     ///     // The argument we'll parse as a signer "path"
@@ -696,7 +698,7 @@ pub fn signer_from_source_with_config(
         },
         #[cfg(feature = "fireblocks")]
         SignerSourceKind::Fireblocks(profile) => {
-            Ok(Box::new(fireblocks_solana_signer::FireblocksSigner::try_from_config(&[profile], |tx| log::info!("{tx}"))?))
+            Ok(Box::new(fireblocks_solana_signer::FireblocksSigner::try_from_config(&[profile], |tx| tracing::info!("{tx}"))?))
         },
     }
 }
@@ -832,7 +834,7 @@ pub fn resolve_signer_from_source(
         #[cfg(feature = "fireblocks")]
         SignerSourceKind::Fireblocks(profile) => Ok(Some(
             fireblocks_solana_signer::FireblocksSigner::try_from_config(&[profile], |tx| {
-                log::info!("{tx}")
+                tracing::info!("{tx}")
             })?
             .pubkey()
             .to_string(),
@@ -1219,8 +1221,8 @@ mod tests {
         super::*,
         crate::offline::OfflineArgs,
         clap::{Arg, Command},
-        solana_keypair::write_keypair_file,
         solana_remote_wallet::remote_wallet::initialize_wallet_manager,
+        solana_sdk::signature::write_keypair_file,
         solana_system_interface::instruction::transfer,
         tempfile::TempDir,
     };

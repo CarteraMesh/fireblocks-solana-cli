@@ -18,39 +18,27 @@ name = "solana_clap_v3_utils"
 [features]
 default = ["fireblocks"]
 elgamal = ["dep:solana-zk-sdk"]
-fireblocks = ["fireblocks-solana-signer", "log"]
+fireblocks = ["fireblocks-solana-signer"]
 gpg = ["fireblocks-solana-signer/gpg"]
 
 [dependencies]
 chrono = { workspace = true, features = ["default"] }
 clap = { version = "3.2.23", features = ["cargo"] }
 fireblocks-solana-signer = { workspace = true, optional = true }
-log = { workspace = true, optional = true }
 rpassword = { workspace = true }
-solana-clock = { workspace = true }
 solana-cluster-type = { workspace = true }
 solana-commitment-config = { workspace = true }
 solana-derivation-path = { workspace = true }
-# the borsh feature is required to use the value_parser macro
-solana-hash = { workspace = true, features = ["borsh"] }
-solana-keypair = { workspace = true, features = ["seed-derivable"] }
-solana-message = { workspace = true }
-solana-native-token = { workspace = true }
-solana-presigner = { workspace = true }
-solana-pubkey = { workspace = true }
 solana-remote-wallet = { workspace = true, features = ["default"] }
-solana-seed-derivable = { workspace = true }
-solana-seed-phrase = { workspace = true }
-solana-signature = { workspace = true }
-solana-signer = { workspace = true }
+solana-sdk = { workspace = true }
 solana-zk-sdk = { workspace = true, optional = true }
 thiserror = { workspace = true }
 tiny-bip39 = { workspace = true }
+tracing = { workspace = true }
 uriparse = { workspace = true }
 url = { workspace = true }
 
 [dev-dependencies]
 assert_matches = { workspace = true }
-solana-pubkey = { workspace = true, features = ["rand"] }
-solana-system-interface = { workspace = true, features = ["bincode"] }
+solana-system-interface = { workspace = true }
 tempfile = { workspace = true }

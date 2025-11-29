@@ -6,14 +6,14 @@ use {
     },
     clap::{builder::ValueParser, ArgMatches},
     solana_derivation_path::{DerivationPath, DerivationPathError},
-    solana_keypair::{read_keypair_file, Keypair},
-    solana_pubkey::Pubkey,
+    solana_sdk::signature::{read_keypair_file, Keypair},
+    solana_sdk::pubkey::Pubkey,
     solana_remote_wallet::{
         locator::{Locator as RemoteWalletLocator, LocatorError as RemoteWalletLocatorError},
         remote_wallet::RemoteWalletManager,
     },
-    solana_signature::Signature,
-    solana_signer::Signer,
+    solana_sdk::signature::Signature,
+    solana_sdk::signature::Signer,
     std::{error, rc::Rc, str::FromStr},
     thiserror::Error,
 };
@@ -549,7 +549,7 @@ mod tests {
         crate::input_parsers::{keypair_of, pubkey_of, pubkeys_of},
         assert_matches::assert_matches,
         clap::{Arg, ArgAction, Command},
-        solana_keypair::write_keypair_file,
+        solana_sdk::signature::write_keypair_file,
         solana_remote_wallet::locator::Manufacturer,
         std::fs,
         tempfile::NamedTempFile,
@@ -771,8 +771,8 @@ mod tests {
 
     #[test]
     fn test_pubkeys_sigs_of() {
-        let key1 = solana_pubkey::new_rand();
-        let key2 = solana_pubkey::new_rand();
+        let key1 = solana_sdk::pubkey::new_rand();
+        let key2 = solana_sdk::pubkey::new_rand();
         let sig1 = Keypair::new().sign_message(&[0u8]);
         let sig2 = Keypair::new().sign_message(&[1u8]);
         let signer1 = format!("{key1}={sig1}");

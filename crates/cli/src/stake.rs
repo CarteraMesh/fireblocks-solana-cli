@@ -14,7 +14,6 @@ use {
         spend_utils::{resolve_spend_tx_and_check_account_balances, SpendAmount},
     },
     clap::{value_t, App, AppSettings, Arg, ArgGroup, ArgMatches, SubCommand},
-    solana_account::{from_account, state_traits::StateMut, Account},
     solana_clap_utils::{
         compute_budget::{compute_unit_price_arg, ComputeUnitLimit, COMPUTE_UNIT_PRICE_ARG},
         fee_payer::{fee_payer_arg, FEE_PAYER_ARG},
@@ -32,20 +31,24 @@ use {
         CliEpochReward, CliStakeHistory, CliStakeHistoryEntry, CliStakeState, CliStakeType,
         OutputFormat, ReturnSignersConfig,
     },
-    solana_clock::{Clock, Epoch, UnixTimestamp, SECONDS_PER_DAY},
-    solana_commitment_config::CommitmentConfig,
-    solana_epoch_schedule::EpochSchedule,
-    solana_message::Message,
-    solana_native_token::Sol,
-    solana_pubkey::Pubkey,
-    solana_remote_wallet::remote_wallet::RemoteWalletManager,
-    solana_rpc_client::rpc_client::RpcClient,
-    solana_rpc_client_api::{
-        config::RpcGetVoteAccountsConfig,
-        request::DELINQUENT_VALIDATOR_SLOT_DISTANCE,
-        response::{RpcInflationReward, RpcVoteAccountStatus},
+    solana_client::{
+        nonce_utils::blockhash_query::BlockhashQuery,
+        rpc_client::RpcClient,
+        rpc_config::RpcGetVoteAccountsConfig,
+        rpc_request::DELINQUENT_VALIDATOR_SLOT_DISTANCE,
+        rpc_response::{RpcInflationReward, RpcVoteAccountStatus},
     },
-    solana_rpc_client_nonce_utils::blockhash_query::BlockhashQuery,
+    solana_commitment_config::CommitmentConfig,
+    solana_remote_wallet::remote_wallet::RemoteWalletManager,
+    solana_sdk::{
+        account::{from_account, state_traits::StateMut, Account},
+        clock::{Clock, Epoch, UnixTimestamp, SECONDS_PER_DAY},
+        epoch_schedule::EpochSchedule,
+        message::Message,
+        native_token::Sol,
+        pubkey::Pubkey,
+        transaction::Transaction,
+    },
     solana_sdk_ids::{
         system_program,
         sysvar::{clock, stake_history},
@@ -59,7 +62,6 @@ use {
         tools::{acceptable_reference_epoch_credits, eligible_for_deactivate_delinquent},
     },
     solana_system_interface::{error::SystemError, instruction as system_instruction},
-    solana_transaction::Transaction,
     std::{ops::Deref, rc::Rc},
 };
 
@@ -820,7 +822,7 @@ pub fn parse_create_stake_account(
     let amount = SpendAmount::new_from_matches(matches, "amount");
     let sign_only = matches.is_present(SIGN_ONLY_ARG.name);
     let dump_transaction_message = matches.is_present(DUMP_TRANSACTION_MESSAGE.name);
-    let blockhash_query = BlockhashQuery::new_from_matches(matches);
+    let blockhash_query = crate::new_from_matches(matches);
     let nonce_account = pubkey_of_signer(matches, NONCE_ARG.name, wallet_manager)?;
     let memo = matches.value_of(MEMO_ARG.name).map(String::from);
     let (nonce_authority, nonce_authority_pubkey) =
@@ -884,7 +886,7 @@ pub fn parse_stake_delegate_stake(
     let force = matches.is_present("force");
     let sign_only = matches.is_present(SIGN_ONLY_ARG.name);
     let dump_transaction_message = matches.is_present(DUMP_TRANSACTION_MESSAGE.name);
-    let blockhash_query = BlockhashQuery::new_from_matches(matches);
+    let blockhash_query = crate::new_from_matches(matches);
     let nonce_account = pubkey_of(matches, NONCE_ARG.name);
     let memo = matches.value_of(MEMO_ARG.name).map(String::from);
     let (stake_authority, stake_authority_pubkey) =
@@ -987,7 +989,7 @@ pub fn parse_stake_authorize(
     };
     let sign_only = matches.is_present(SIGN_ONLY_ARG.name);
     let dump_transaction_message = matches.is_present(DUMP_TRANSACTION_MESSAGE.name);
-    let blockhash_query = BlockhashQuery::new_from_matches(matches);
+    let blockhash_query = crate::new_from_matches(matches);
     let nonce_account = pubkey_of(matches, NONCE_ARG.name);
     let memo = matches.value_of(MEMO_ARG.name).map(String::from);
     let (nonce_authority, nonce_authority_pubkey) =
@@ -1063,7 +1065,7 @@ pub fn parse_split_stake(
 
     let sign_only = matches.is_present(SIGN_ONLY_ARG.name);
     let dump_transaction_message = matches.is_present(DUMP_TRANSACTION_MESSAGE.name);
-    let blockhash_query = BlockhashQuery::new_from_matches(matches);
+    let blockhash_query = crate::new_from_matches(matches);
     let nonce_account = pubkey_of(matches, NONCE_ARG.name);
     let memo = matches.value_of(MEMO_ARG.name).map(String::from);
     let (stake_authority, stake_authority_pubkey) =
@@ -1114,7 +1116,7 @@ pub fn parse_merge_stake(
 
     let sign_only = matches.is_present(SIGN_ONLY_ARG.name);
     let dump_transaction_message = matches.is_present(DUMP_TRANSACTION_MESSAGE.name);
-    let blockhash_query = BlockhashQuery::new_from_matches(matches);
+    let blockhash_query = crate::new_from_matches(matches);
     let nonce_account = pubkey_of(matches, NONCE_ARG.name);
     let memo = matches.value_of(MEMO_ARG.name).map(String::from);
     let (stake_authority, stake_authority_pubkey) =
@@ -1159,7 +1161,7 @@ pub fn parse_stake_deactivate_stake(
     let sign_only = matches.is_present(SIGN_ONLY_ARG.name);
     let deactivate_delinquent = matches.is_present("delinquent");
     let dump_transaction_message = matches.is_present(DUMP_TRANSACTION_MESSAGE.name);
-    let blockhash_query = BlockhashQuery::new_from_matches(matches);
+    let blockhash_query = crate::new_from_matches(matches);
     let nonce_account = pubkey_of(matches, NONCE_ARG.name);
     let memo = matches.value_of(MEMO_ARG.name).map(String::from);
     let seed = value_t!(matches, "seed", String).ok();
@@ -1209,7 +1211,7 @@ pub fn parse_stake_withdraw_stake(
     let amount = SpendAmount::new_from_matches(matches, "amount");
     let sign_only = matches.is_present(SIGN_ONLY_ARG.name);
     let dump_transaction_message = matches.is_present(DUMP_TRANSACTION_MESSAGE.name);
-    let blockhash_query = BlockhashQuery::new_from_matches(matches);
+    let blockhash_query = crate::new_from_matches(matches);
     let nonce_account = pubkey_of(matches, NONCE_ARG.name);
     let memo = matches.value_of(MEMO_ARG.name).map(String::from);
     let seed = value_t!(matches, "seed", String).ok();
@@ -1274,7 +1276,7 @@ pub fn parse_stake_set_lockup(
 
     let sign_only = matches.is_present(SIGN_ONLY_ARG.name);
     let dump_transaction_message = matches.is_present(DUMP_TRANSACTION_MESSAGE.name);
-    let blockhash_query = BlockhashQuery::new_from_matches(matches);
+    let blockhash_query = crate::new_from_matches(matches);
     let nonce_account = pubkey_of(matches, NONCE_ARG.name);
     let memo = matches.value_of(MEMO_ARG.name).map(String::from);
 
@@ -1506,7 +1508,7 @@ pub fn process_create_stake_account(
         }
 
         if let Some(nonce_account) = &nonce_account {
-            let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
+            let nonce_account = solana_client::nonce_utils::get_account_with_commitment(
                 rpc_client,
                 nonce_account,
                 config.commitment,
@@ -1526,10 +1528,6 @@ pub fn process_create_stake_account(
             },
         )
     } else {
-        // Fireblocks needs all signers to sign before fireblocks can sign
-        //        #[cfg(feature = "fireblocks")]
-        //      crate::fireblocks_sign!(tx, &config.signers, recent_blockhash);
-        //    #[cfg(not(feature = "fireblocks"))]
         tx.try_sign(&config.signers, recent_blockhash)?;
         let result = rpc_client.send_and_confirm_transaction_with_spinner_and_config(
             &tx,
@@ -1662,7 +1660,7 @@ pub fn process_stake_authorize(
     } else {
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
-            let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
+            let nonce_account = solana_client::nonce_utils::get_account_with_commitment(
                 rpc_client,
                 nonce_account,
                 config.commitment,
@@ -1821,7 +1819,7 @@ pub fn process_deactivate_stake_account(
     } else {
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
-            let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
+            let nonce_account = solana_client::nonce_utils::get_account_with_commitment(
                 rpc_client,
                 nonce_account,
                 config.commitment,
@@ -1932,7 +1930,7 @@ pub fn process_withdraw_stake(
     } else {
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
-            let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
+            let nonce_account = solana_client::nonce_utils::get_account_with_commitment(
                 rpc_client,
                 nonce_account,
                 config.commitment,
@@ -2126,7 +2124,7 @@ pub fn process_split_stake(
     } else {
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
-            let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
+            let nonce_account = solana_client::nonce_utils::get_account_with_commitment(
                 rpc_client,
                 nonce_account,
                 config.commitment,
@@ -2244,7 +2242,7 @@ pub fn process_merge_stake(
     } else {
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
-            let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
+            let nonce_account = solana_client::nonce_utils::get_account_with_commitment(
                 rpc_client,
                 nonce_account,
                 config.commitment,
@@ -2347,7 +2345,7 @@ pub fn process_stake_set_lockup(
     } else {
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
-            let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
+            let nonce_account = solana_client::nonce_utils::get_account_with_commitment(
                 rpc_client,
                 nonce_account,
                 config.commitment,
@@ -2645,7 +2643,7 @@ pub fn process_show_stake_account(
 pub fn get_account_stake_state(
     rpc_client: &RpcClient,
     stake_account_address: &Pubkey,
-    stake_account: solana_account::Account,
+    stake_account: solana_sdk::account::Account,
     use_lamports_unit: bool,
     with_rewards: Option<usize>,
     use_csv: bool,
@@ -2857,7 +2855,7 @@ pub fn process_delegate_stake(
     } else {
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
-            let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
+            let nonce_account = solana_client::nonce_utils::get_account_with_commitment(
                 rpc_client,
                 nonce_account,
                 config.commitment,
@@ -2906,11 +2904,12 @@ mod tests {
     use {
         super::*,
         crate::{clap_app::get_clap_app, cli::parse_command},
-        solana_hash::Hash,
-        solana_keypair::{keypair_from_seed, read_keypair_file, write_keypair, Keypair},
-        solana_presigner::Presigner,
-        solana_rpc_client_nonce_utils::blockhash_query,
-        solana_signer::Signer,
+        solana_client::nonce_utils::blockhash_query,
+        solana_sdk::{
+            hash::Hash,
+            signature::{keypair_from_seed, read_keypair_file, write_keypair, Keypair, Signer},
+            signer::presigner::Presigner,
+        },
         tempfile::NamedTempFile,
     };
 
@@ -3999,9 +3998,9 @@ mod tests {
         );
 
         // Test CreateStakeAccount SubCommand
-        let custodian = solana_pubkey::new_rand();
+        let custodian = solana_sdk::pubkey::new_rand();
         let custodian_string = format!("{custodian}");
-        let authorized = solana_pubkey::new_rand();
+        let authorized = solana_sdk::pubkey::new_rand();
         let authorized_string = format!("{authorized}");
         let test_create_stake_account = test_commands.clone().get_matches_from(vec![
             "test",
@@ -4204,7 +4203,7 @@ mod tests {
         );
 
         // Test DelegateStake Subcommand
-        let vote_account_pubkey = solana_pubkey::new_rand();
+        let vote_account_pubkey = solana_sdk::pubkey::new_rand();
         let vote_account_string = vote_account_pubkey.to_string();
         let test_delegate_stake = test_commands.clone().get_matches_from(vec![
             "test",
@@ -4234,7 +4233,7 @@ mod tests {
         );
 
         // Test DelegateStake Subcommand w/ authority
-        let vote_account_pubkey = solana_pubkey::new_rand();
+        let vote_account_pubkey = solana_sdk::pubkey::new_rand();
         let vote_account_string = vote_account_pubkey.to_string();
         let test_delegate_stake = test_commands.clone().get_matches_from(vec![
             "test",
@@ -4363,7 +4362,7 @@ mod tests {
         );
 
         // Test Delegate Subcommand w/ absent fee payer
-        let key1 = solana_pubkey::new_rand();
+        let key1 = solana_sdk::pubkey::new_rand();
         let sig1 = Keypair::new().sign_message(&[0u8]);
         let signer1 = format!("{key1}={sig1}");
         let test_delegate_stake = test_commands.clone().get_matches_from(vec![
@@ -4406,7 +4405,7 @@ mod tests {
         );
 
         // Test Delegate Subcommand w/ absent fee payer and absent nonce authority
-        let key2 = solana_pubkey::new_rand();
+        let key2 = solana_sdk::pubkey::new_rand();
         let sig2 = Keypair::new().sign_message(&[0u8]);
         let signer2 = format!("{key2}={sig2}");
         let test_delegate_stake = test_commands.clone().get_matches_from(vec![
@@ -4864,7 +4863,7 @@ mod tests {
         );
 
         // Test Deactivate Subcommand w/ absent fee payer
-        let key1 = solana_pubkey::new_rand();
+        let key1 = solana_sdk::pubkey::new_rand();
         let sig1 = Keypair::new().sign_message(&[0u8]);
         let signer1 = format!("{key1}={sig1}");
         let test_deactivate_stake = test_commands.clone().get_matches_from(vec![
@@ -4906,7 +4905,7 @@ mod tests {
         );
 
         // Test Deactivate Subcommand w/ absent fee payer and nonce authority
-        let key2 = solana_pubkey::new_rand();
+        let key2 = solana_sdk::pubkey::new_rand();
         let sig2 = Keypair::new().sign_message(&[0u8]);
         let signer2 = format!("{key2}={sig2}");
         let test_deactivate_stake = test_commands.clone().get_matches_from(vec![
@@ -5099,7 +5098,7 @@ mod tests {
         let stake_account_keypair = Keypair::new();
         write_keypair(&stake_account_keypair, tmp_file.as_file_mut()).unwrap();
 
-        let source_stake_account_pubkey = solana_pubkey::new_rand();
+        let source_stake_account_pubkey = solana_sdk::pubkey::new_rand();
         let test_merge_stake_account = test_commands.clone().get_matches_from(vec![
             "test",
             "merge-stake",

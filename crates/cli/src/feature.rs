@@ -10,29 +10,30 @@ use {
     clap::{value_t_or_exit, App, AppSettings, Arg, ArgMatches, SubCommand},
     console::style,
     serde::{Deserialize, Serialize},
-    solana_account::Account,
     solana_clap_utils::{
         compute_budget::ComputeUnitLimit, fee_payer::*, hidden_unless_forced, input_parsers::*,
         input_validators::*, keypair::*,
     },
     solana_cli_output::{cli_version::CliVersion, QuietDisplay, VerboseDisplay},
-    solana_clock::{Epoch, Slot},
+    solana_client::{
+        client_error::ClientError, rpc_client::RpcClient, rpc_request::MAX_MULTIPLE_ACCOUNTS,
+        rpc_response::RpcVoteAccountInfo,
+    },
     solana_cluster_type::ClusterType,
-    solana_epoch_schedule::EpochSchedule,
+    solana_sdk::epoch_schedule::EpochSchedule,
     solana_feature_gate_interface::{
         activate_with_lamports, error::FeatureGateError, from_account,
         instruction::revoke_pending_activation, Feature,
     },
-    solana_message::Message,
-    solana_pubkey::Pubkey,
     solana_remote_wallet::remote_wallet::RemoteWalletManager,
-    solana_rpc_client::rpc_client::RpcClient,
-    solana_rpc_client_api::{
-        client_error::Error as ClientError, request::MAX_MULTIPLE_ACCOUNTS,
-        response::RpcVoteAccountInfo,
+    solana_sdk::{
+        account::Account,
+        clock::{Epoch, Slot},
+        message::Message,
+        pubkey::Pubkey,
+        transaction::Transaction,
     },
     solana_system_interface::error::SystemError,
-    solana_transaction::Transaction,
     std::{cmp::Ordering, collections::HashMap, fmt, rc::Rc, str::FromStr},
 };
 

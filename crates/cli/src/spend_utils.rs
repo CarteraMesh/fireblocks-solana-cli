@@ -11,10 +11,10 @@ use {
     },
     solana_cli_output::display::build_balance_message,
     solana_commitment_config::CommitmentConfig,
-    solana_hash::Hash,
-    solana_message::Message,
-    solana_pubkey::Pubkey,
-    solana_rpc_client::rpc_client::RpcClient,
+    solana_sdk::hash::Hash,
+    solana_sdk::message::Message,
+    solana_sdk::pubkey::Pubkey,
+    solana_client::rpc_client::RpcClient,
 };
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]

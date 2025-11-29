@@ -8,30 +8,31 @@ repository = { workspace = true }
 homepage = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
-
-[features]
-default = [ "fireblocks" ]
-fireblocks = ["solana-clap-utils/fireblocks", "fireblocks-solana-signer"]
-gpg = ["solana-clap-utils/gpg", "fireblocks-solana-signer/gpg"]
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
+
+[package.metadata.cargo-machete]
+ignored = ["solana-connection-cache"]
 
 [[bin]]
 name = "solana"
 path = "src/main.rs"
 
+[features]
+default = ["fireblocks"]
+fireblocks = ["solana-clap-utils/fireblocks"]
+gpg = ["solana-clap-utils/gpg"]
+
 [dependencies]
 agave-feature-set = { workspace = true }
 agave-syscalls = { workspace = true }
 bincode = { workspace = true }
-bs58 = { workspace = true }
-clap = { workspace = true }
+clap = "2.33.0" 
 console = { workspace = true }
 const_format = { workspace = true }
 criterion-stats = { workspace = true }
 crossbeam-channel = { workspace = true }
 ctrlc = { workspace = true, features = ["termination"] }
-fireblocks-solana-signer = { workspace = true , optional = true }
 hex = { workspace = true }
 humantime = { workspace = true }
 log = { workspace = true }
@@ -42,64 +43,36 @@ semver = { workspace = true }
 serde = { workspace = true }
 serde_derive = { workspace = true }
 serde_json = { workspace = true }
-solana-account =  { workspace = true }
 solana-account-decoder = { workspace = true }
 solana-address-lookup-table-interface = { workspace = true }
-solana-borsh = { workspace = true }
 solana-clap-utils = { workspace = true }
 solana-cli-config = { workspace = true }
 solana-cli-output = { workspace = true }
 solana-client = { workspace = true }
-solana-clock =  { workspace = true }
-solana-cluster-type =  { workspace = true }
+solana-cluster-type = { workspace = true }
 solana-commitment-config = { workspace = true }
-solana-compute-budget-interface = { workspace = true , features = ["borsh"] }
+solana-compute-budget-interface = { workspace = true, features = ["borsh"] }
 solana-config-interface = { workspace = true }
 solana-connection-cache = { workspace = true }
-solana-epoch-schedule = { workspace = true }
-solana-feature-gate-interface = { workspace = true , features = ["bincode"] }
-solana-fee-calculator = { workspace = true }
-solana-fee-structure = { workspace = true }
-solana-hash = { workspace = true }
-solana-instruction = { workspace = true }
-solana-keypair = { workspace = true }
-solana-loader-v3-interface = { workspace = true , features = ["bincode"] }
-solana-loader-v4-interface =  { workspace = true }
+solana-feature-gate-interface = { workspace = true, features = ["bincode"] }
+solana-loader-v3-interface = { workspace = true, features = ["bincode"] }
+solana-loader-v4-interface = { workspace = true }
 solana-loader-v4-program = { workspace = true }
 solana-logger = { workspace = true }
-solana-message = { workspace = true }
-solana-native-token = { workspace = true }
 solana-nonce = { workspace = true }
-solana-offchain-message = { workspace = true, features = ["verify"] }
-solana-packet = { workspace = true }
 solana-program-runtime = { workspace = true }
-solana-pubkey = { workspace = true , default-features = false }
-solana-pubsub-client = { workspace = true }
-solana-quic-client = { workspace = true }
 solana-remote-wallet = { workspace = true, features = ["default"] }
-solana-rent = { workspace = true }
-solana-rpc-client = { workspace = true, features = ["default"] }
-solana-rpc-client-api = { workspace = true }
-solana-rpc-client-nonce-utils = { workspace = true, features = ["clap"] }
 solana-sbpf = { workspace = true, features = ["jit"] }
+solana-sdk = { workspace = true }
 solana-sdk-ids = { workspace = true }
-solana-signature = { workspace = true , default-features = false }
-solana-signer = { workspace = true }
-solana-slot-history = { workspace = true }
-solana-stake-interface =  { workspace = true }
-solana-streamer = { workspace = true }
-solana-system-interface = {workspace = true, features = ["bincode"] }
-solana-sysvar = { workspace = true }
+solana-stake-interface = { workspace = true }
+solana-system-interface = { workspace = true, features = ["bincode"] }
 solana-tps-client = { workspace = true }
-solana-tpu-client = { workspace = true, features = ["default"] }
-solana-transaction = { workspace = true }
-solana-transaction-error = { workspace = true }
 solana-transaction-status = { workspace = true }
 solana-transaction-status-client-types = { workspace = true }
-solana-udp-client = { workspace = true }
 solana-version = { workspace = true }
-solana-vote-program = { workspace = true }
-spl-memo-interface = { workspace = true  }
+solana-vote-interface = { workspace = true }
+spl-memo-interface = { workspace = true }
 thiserror = { workspace = true }
 tiny-bip39 = { workspace = true }
 
@@ -107,9 +80,7 @@ tiny-bip39 = { workspace = true }
 assert_matches = { workspace = true }
 solana-faucet = { workspace = true }
 solana-nonce-account = { workspace = true }
-solana-presigner = { workspace = true }
 solana-rpc = { workspace = true }
-solana-sha256-hasher = { workspace = true }
 solana-streamer = { workspace = true }
 solana-test-validator = { workspace = true }
 tempfile = { workspace = true }

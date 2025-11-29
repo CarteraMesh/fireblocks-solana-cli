@@ -11,7 +11,6 @@ use {
     agave_feature_set::{raise_cpi_nesting_limit_to_8, FeatureSet, FEATURE_NAMES},
     clap::{value_t, App, AppSettings, Arg, ArgMatches, SubCommand},
     log::*,
-    solana_account::Account,
     solana_account_decoder::{UiAccountEncoding, UiDataSliceConfig},
     solana_clap_utils::{
         compute_budget::{compute_unit_price_arg, ComputeUnitLimit},
@@ -25,12 +24,16 @@ use {
     },
     solana_client::{
         connection_cache::ConnectionCache,
+        nonce_utils::blockhash_query::BlockhashQuery,
+        rpc_client::RpcClient,
+        rpc_config::{RpcAccountInfoConfig, RpcProgramAccountsConfig},
+        rpc_filter::{Memcmp, RpcFilterType},
+        rpc_request::MAX_MULTIPLE_ACCOUNTS,
         send_and_confirm_transactions_in_parallel::{
             send_and_confirm_transactions_in_parallel_blocking_v2, SendAndConfirmConfigV2,
         },
         tpu_client::{TpuClient, TpuClientConfig},
     },
-    solana_instruction::Instruction,
     solana_loader_v4_interface::{
         instruction,
         state::{
@@ -38,24 +41,17 @@ use {
             LoaderV4Status::{self, Retracted},
         },
     },
-    solana_message::Message,
     solana_program_runtime::{
         execution_budget::SVMTransactionExecutionBudget, invoke_context::InvokeContext,
     },
-    solana_pubkey::Pubkey,
     solana_remote_wallet::remote_wallet::RemoteWalletManager,
-    solana_rpc_client::rpc_client::RpcClient,
-    solana_rpc_client_api::{
-        config::{RpcAccountInfoConfig, RpcProgramAccountsConfig},
-        filter::{Memcmp, RpcFilterType},
-        request::MAX_MULTIPLE_ACCOUNTS,
-    },
-    solana_rpc_client_nonce_utils::blockhash_query::BlockhashQuery,
     solana_sbpf::{elf::Executable, verifier::RequisiteVerifier},
+    solana_sdk::{
+        account::Account, instruction::Instruction, message::Message, pubkey::Pubkey,
+        signature::Signer, transaction::Transaction,
+    },
     solana_sdk_ids::{loader_v4, system_program},
-    solana_signer::Signer,
     solana_system_interface::{instruction as system_instruction, MAX_PERMITTED_DATA_LENGTH},
-    solana_transaction::Transaction,
     std::{
         cmp::Ordering,
         fs::File,
@@ -83,7 +79,7 @@ impl AdditionalCliConfig {
             use_rpc: matches.is_present("use-rpc"),
             sign_only: matches.is_present(SIGN_ONLY_ARG.name),
             dump_transaction_message: matches.is_present(DUMP_TRANSACTION_MESSAGE.name),
-            blockhash_query: BlockhashQuery::new_from_matches(matches),
+            blockhash_query: crate::new_from_matches(matches),
             compute_unit_price: value_t!(matches, "compute_unit_price", u64).ok(),
         }
     }
@@ -1139,7 +1135,7 @@ fn send_messages(
             )?;
             messages.push(message);
         }
-        Ok::<Vec<solana_message::Message>, Box<dyn std::error::Error>>(messages)
+        Ok::<Vec<solana_sdk::message::Message>, Box<dyn std::error::Error>>(messages)
     };
     let initial_messages = simulate_messages(initial_messages)?;
     let write_messages = simulate_messages(write_messages)?;
@@ -1473,15 +1469,17 @@ mod tests {
         super::*,
         crate::{clap_app::get_clap_app, cli::parse_command},
         serde_json::json,
-        solana_keypair::{keypair_from_seed, read_keypair_file, write_keypair_file, Keypair},
-        solana_rpc_client_api::{
-            request::RpcRequest,
-            response::{Response, RpcResponseContext},
+        solana_client::{
+            rpc_request::RpcRequest,
+            rpc_response::{Response, RpcResponseContext},
+        },
+        solana_sdk::signature::{
+            keypair_from_seed, read_keypair_file, write_keypair_file, Keypair,
         },
         std::collections::HashMap,
     };
 
-    fn program_authority() -> solana_keypair::Keypair {
+    fn program_authority() -> solana_sdk::signature::Keypair {
         keypair_from_seed(&[3u8; 32]).unwrap()
     }
 

@@ -11,7 +11,6 @@ use {
     console::style,
     crossbeam_channel::unbounded,
     serde::{Deserialize, Serialize},
-    solana_account::{from_account, state_traits::StateMut},
     solana_clap_utils::{
         compute_budget::{compute_unit_price_arg, ComputeUnitLimit, COMPUTE_UNIT_PRICE_ARG},
         input_parsers::*,
@@ -27,38 +26,42 @@ use {
         },
         *,
     },
-    solana_clock::{self as clock, Clock, Epoch, Slot},
-    solana_commitment_config::CommitmentConfig,
-    solana_hash::Hash,
-    solana_message::Message,
-    solana_nonce::state::State as NonceState,
-    solana_pubkey::Pubkey,
-    solana_pubsub_client::pubsub_client::PubsubClient,
-    solana_remote_wallet::remote_wallet::RemoteWalletManager,
-    solana_rent::Rent,
-    solana_rpc_client::rpc_client::{GetConfirmedSignaturesForAddress2Config, RpcClient},
-    solana_rpc_client_api::{
-        client_error::ErrorKind as ClientErrorKind,
-        config::{
+    solana_client::{
+        client_error::ClientErrorKind,
+        pubsub_client::PubsubClient,
+        rpc_client::{GetConfirmedSignaturesForAddress2Config, RpcClient},
+        rpc_config::{
             RpcAccountInfoConfig, RpcBlockConfig, RpcGetVoteAccountsConfig,
             RpcLargestAccountsConfig, RpcLargestAccountsFilter, RpcProgramAccountsConfig,
             RpcTransactionConfig, RpcTransactionLogsConfig, RpcTransactionLogsFilter,
         },
-        filter::{Memcmp, RpcFilterType},
-        request::DELINQUENT_VALIDATOR_SLOT_DISTANCE,
-        response::{RpcPerfSample, RpcPrioritizationFee, SlotInfo},
+        rpc_filter::{Memcmp, RpcFilterType},
+        rpc_request::DELINQUENT_VALIDATOR_SLOT_DISTANCE,
+        rpc_response::{RpcPerfSample, RpcPrioritizationFee, SlotInfo},
+    },
+    solana_commitment_config::CommitmentConfig,
+    solana_nonce::state::State as NonceState,
+    solana_remote_wallet::remote_wallet::RemoteWalletManager,
+    solana_sdk::rent::Rent,
+    solana_sdk::{
+        account::{from_account, state_traits::StateMut},
+        clock::{self as clock, Clock, Epoch, Slot},
+        hash::Hash,
+        message::Message,
+        pubkey::Pubkey,
+        signature::Signature,
+        slot_history::SlotHistory,
+        transaction::Transaction,
     },
     solana_sdk_ids::sysvar::{self, stake_history},
-    solana_signature::Signature,
-    solana_slot_history::{self as slot_history, SlotHistory},
     solana_stake_interface::{self as stake, state::StakeStateV2},
     solana_system_interface::{instruction as system_instruction, MAX_PERMITTED_DATA_LENGTH},
     solana_tps_client::TpsClient,
-    solana_transaction::Transaction,
-    solana_transaction_status::{
-        EncodableWithMeta, EncodedConfirmedTransactionWithStatusMeta, UiTransactionEncoding,
+    solana_transaction_status::EncodableWithMeta,
+    solana_transaction_status_client_types::{
+        EncodedConfirmedTransactionWithStatusMeta, UiTransactionEncoding,
     },
-    solana_vote_program::vote_state::VoteStateV3,
+    solana_vote_interface::state::vote_state_v3::VoteStateV3,
     std::{
         collections::{BTreeMap, HashMap, HashSet, VecDeque},
         fmt,
@@ -1248,7 +1251,7 @@ pub fn process_show_block_production(
             // Fast, more reliable path using the SlotHistory sysvar
 
             let confirmed_blocks: Vec<_> = (start_slot..=end_slot)
-                .filter(|slot| slot_history.check(*slot) == slot_history::Check::Found)
+                .filter(|slot| slot_history.check(*slot) == solana_sdk::slot_history::Check::Found)
                 .collect();
             (confirmed_blocks, start_slot)
         } else {
@@ -2317,7 +2320,7 @@ mod tests {
     use {
         super::*,
         crate::{clap_app::get_clap_app, cli::parse_command},
-        solana_keypair::{write_keypair, Keypair},
+        solana_sdk::signature::{write_keypair, Keypair},
         std::str::FromStr,
         tempfile::NamedTempFile,
     };

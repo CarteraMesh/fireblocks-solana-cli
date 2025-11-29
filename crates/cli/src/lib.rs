@@ -1,3 +1,5 @@
+use {clap::ArgMatches, solana_client::blockhash_query::BlockhashQuery};
+
 macro_rules! ACCOUNT_STRING {
     () => {
         r#" Address is one of:
@@ -40,3 +42,16 @@ pub mod test_utils;
 pub mod validator_info;
 pub mod vote;
 pub mod wallet;
+
+use solana_clap_utils::{
+    input_parsers::{pubkey_of, value_of},
+    nonce::NONCE_ARG,
+    offline::{BLOCKHASH_ARG, SIGN_ONLY_ARG},
+};
+
+pub fn new_from_matches(matches: &ArgMatches<'_>) -> BlockhashQuery {
+    let blockhash = value_of(matches, BLOCKHASH_ARG.name);
+    let sign_only = matches.is_present(SIGN_ONLY_ARG.name);
+    let nonce_account = pubkey_of(matches, NONCE_ARG.name);
+    BlockhashQuery::new(blockhash, sign_only, nonce_account)
+}

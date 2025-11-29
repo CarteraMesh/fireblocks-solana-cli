@@ -10,15 +10,15 @@ use {
     solana_commitment_config::CommitmentConfig,
     solana_compute_budget_interface::ComputeBudgetInstruction,
     solana_faucet::faucet::run_local_faucet,
-    solana_fee_structure::FeeStructure,
-    solana_keypair::{keypair_from_seed, Keypair},
-    solana_message::Message,
-    solana_native_token::LAMPORTS_PER_SOL,
+    solana_sdk::fee::FeeStructure,
+    solana_sdk::signature::{keypair_from_seed, Keypair},
+    solana_sdk::message::Message,
+    solana_sdk::native_token::LAMPORTS_PER_SOL,
     solana_nonce::state::State as NonceState,
-    solana_pubkey::Pubkey,
-    solana_rpc_client::rpc_client::RpcClient,
-    solana_rpc_client_nonce_utils::blockhash_query::{self, BlockhashQuery},
-    solana_signer::{null_signer::NullSigner, Signer},
+    solana_sdk::pubkey::Pubkey,
+    solana_client::rpc_client::RpcClient,
+    solana_client::nonce_utils::blockhash_query::{self, BlockhashQuery},
+    solana_sdk::signature::{null_signer::NullSigner, Signer},
     solana_stake_interface as stake,
     solana_streamer::socket::SocketAddrSpace,
     solana_system_interface::instruction as system_instruction,
@@ -198,12 +198,12 @@ fn test_transfer(skip_preflight: bool) {
     );
 
     // Fetch nonce hash
-    let nonce_hash = solana_rpc_client_nonce_utils::get_account_with_commitment(
+    let nonce_hash = solana_client::nonce_utils::get_account_with_commitment(
         &rpc_client,
         &nonce_account.pubkey(),
         CommitmentConfig::processed(),
     )
-    .and_then(|ref a| solana_rpc_client_nonce_utils::data_from_account(a))
+    .and_then(|ref a| solana_client::nonce_utils::data_from_account(a))
     .unwrap()
     .blockhash();
 
@@ -236,12 +236,12 @@ fn test_transfer(skip_preflight: bool) {
         &sender_pubkey,
     );
     check_balance!(2_500_000_000, &rpc_client, &recipient_pubkey);
-    let new_nonce_hash = solana_rpc_client_nonce_utils::get_account_with_commitment(
+    let new_nonce_hash = solana_client::nonce_utils::get_account_with_commitment(
         &rpc_client,
         &nonce_account.pubkey(),
         CommitmentConfig::processed(),
     )
-    .and_then(|ref a| solana_rpc_client_nonce_utils::data_from_account(a))
+    .and_then(|ref a| solana_client::nonce_utils::data_from_account(a))
     .unwrap()
     .blockhash();
     assert_ne!(nonce_hash, new_nonce_hash);
@@ -263,12 +263,12 @@ fn test_transfer(skip_preflight: bool) {
     );
 
     // Fetch nonce hash
-    let nonce_hash = solana_rpc_client_nonce_utils::get_account_with_commitment(
+    let nonce_hash = solana_client::nonce_utils::get_account_with_commitment(
         &rpc_client,
         &nonce_account.pubkey(),
         CommitmentConfig::processed(),
     )
-    .and_then(|ref a| solana_rpc_client_nonce_utils::data_from_account(a))
+    .and_then(|ref a| solana_client::nonce_utils::data_from_account(a))
     .unwrap()
     .blockhash();
 
