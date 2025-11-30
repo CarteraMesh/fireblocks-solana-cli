@@ -27,7 +27,7 @@ gpg = ["solana-clap-utils/gpg"]
 agave-feature-set = { workspace = true }
 agave-syscalls = { workspace = true }
 bincode = { workspace = true }
-clap = "2.33.0" 
+clap = "2.33.0"
 console = { workspace = true }
 const_format = { workspace = true }
 criterion-stats = { workspace = true }
@@ -60,6 +60,7 @@ solana-loader-v4-interface = { workspace = true }
 solana-loader-v4-program = { workspace = true }
 solana-logger = { workspace = true }
 solana-nonce = { workspace = true }
+solana-packet = { workspace = true }
 solana-program-runtime = { workspace = true }
 solana-remote-wallet = { workspace = true, features = ["default"] }
 solana-sbpf = { workspace = true, features = ["jit"] }

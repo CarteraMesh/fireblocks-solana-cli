@@ -40,7 +40,7 @@ use {
         error::VoteError,
         instruction::{self as vote_instruction, withdraw, CreateVoteAccountConfig},
         state::{
-            VoteAuthorize, VoteInit, VoteStateV3, VoteStateVersions, VOTE_CREDITS_MAXIMUM_PER_SLOT,
+            VoteAuthorize, VoteInit, VoteStateV3, VoteStateVersions, VOTE_CREDITS_MAXIMUM_PER_SLOT, 
         },
     },
     std::rc::Rc,
@@ -368,8 +368,8 @@ impl VoteSubCommands for App<'_, '_> {
                         .default_value_if("with_rewards", None, "1")
                         .requires("with_rewards")
                         .help(
-                            "Display rewards for NUM recent epochs, max 10 \
-                            [default: latest epoch only]",
+                            "Display rewards for NUM recent epochs, max 10 [default: latest epoch \
+                             only]",
                         ),
                 ),
         )
@@ -1358,6 +1358,12 @@ pub fn process_show_vote_account(
         use_lamports_unit,
         use_csv,
         epoch_rewards,
+        inflation_rewards_collector: String::new(), //vote_state.inflation_rewards_collector.to_string(),
+        block_revenue_collector: String::new(), // vote_state.block_revenue_collector.to_string(),
+        block_revenue_commission_bps: 0,        // vote_state.block_revenue_commission_bps,
+        bls_pubkey_compressed: None,
+        inflation_rewards_commission_bps: 0,
+        pending_delegator_rewards: 0,
     };
 
     Ok(config.output_format.formatted_string(&vote_account_data))

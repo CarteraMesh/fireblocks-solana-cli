@@ -9,7 +9,7 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
-name: build
+name: test
 jobs:
   build:
     runs-on: ${{ vars.RUNNER }}
@@ -34,11 +34,15 @@ jobs:
       - name: test clap-v3-utils
         run: |
           cargo test -p solana-clap-v3-utils --lib --tests -- --nocapture
-      - name: build
+      - name: test cli-config
+        run: |
+          cargo test -p solana-cli-config --lib --tests -- --nocapture
+      - name: cargo build
         run: |
           cargo build
       - name: test
         run: |
           echo "using ${{ steps.config.outputs.solana-config-path }}"
           cat "${{ steps.config.outputs.solana-config-path }}"
+          echo
           ./cli-tests/test.sh "${{ steps.config.outputs.solana-config-path }}"

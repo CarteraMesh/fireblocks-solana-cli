@@ -1,0 +1,50 @@
+[package]
+name = "solana-cli-output"
+documentation = "https://docs.rs/solana-cli-output"
+version = { workspace = true }
+authors = { workspace = true }
+description = "Forked version with fireblocks remote signing support"
+repository = { workspace = true }
+homepage = { workspace = true }
+license = { workspace = true }
+edition = { workspace = true }
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[features]
+default = ["fireblocks"]
+enabletests = [] # disable test due to ed25519-dalek dep
+fireblocks = ["solana-clap-utils/fireblocks", "solana-cli-config/fireblocks"]
+gpg = ["solana-clap-utils/gpg", "solana-cli-config/gpg"]
+
+[dependencies]
+Inflector = { workspace = true }
+agave-reserved-account-keys = { workspace = true }
+base64 = { workspace = true }
+chrono = { workspace = true, features = ["default", "serde"] }
+clap = "2.33.0"
+console = { workspace = true }
+humantime = { workspace = true }
+indicatif = { workspace = true }
+pretty-hex = { workspace = true }
+semver = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+solana-account-decoder = { workspace = true }
+solana-bincode = { workspace = true }
+solana-clap-utils = { workspace = true }
+solana-cli-config = { workspace = true }
+solana-client = { workspace = true }
+solana-packet = { workspace = true }
+solana-sdk = { workspace = true }
+solana-sdk-ids = { workspace = true }
+solana-stake-interface = { workspace = true }
+solana-system-interface = { workspace = true }
+solana-transaction-status = { workspace = true }
+solana-transaction-status-client-types = { workspace = true }
+solana-vote-interface = { workspace = true }
+spl-memo-interface = { workspace = true }
+
+#[dev-dependencies]
+#ed25519-dalek = { workspace = true }

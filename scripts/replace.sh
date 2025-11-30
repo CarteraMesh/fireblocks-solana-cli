@@ -2,7 +2,7 @@
 
 target="${1:?}"
 
-for i in account fee_calculator epoch_schedule native_token program_pack program_option instruction transaction message signature pubkey hash clock; do
+for i in account fee_calculator epoch_schedule native_token program_pack program_option instruction transaction message signature pubkey hash clock epoch_info; do
   git ls-files $target | xargs sed -i s/solana_$i::/solana_sdk::$i::/g
 done
 
@@ -17,3 +17,4 @@ git ls-files $target | xargs sed -i s/solana_client_nonce_utils/solana_client::n
 git ls-files $target | xargs sed -i s/solana_client_api::config::RpcTransactionConfig/solana_client::rpc_config::RpcTransactionConfig/g
 git ls-files $target | xargs sed -i s/solana_client_api::config/solana_client::rpc_config/g
 git ls-files $target | xargs sed -i s/BlockhashQuery::new_from_matches/crate::new_from_matches/g crates/cli/src/*.rs
+git ls-files $target | xargs sed -i s/solana_vote_program::/solana_vote_interface::/g

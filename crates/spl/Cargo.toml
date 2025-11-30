@@ -16,8 +16,12 @@ path = "src/main.rs"
 
 [features]
 default = ["fireblocks"]
-fireblocks = ["solana-clap-v3-utils/fireblocks"]
-gpg = ["solana-clap-v3-utils/gpg"]
+fireblocks = [
+    "solana-clap-v3-utils/fireblocks",
+    "solana-cli-config/fireblocks",
+    "solana-cli-output/fireblocks",
+]
+gpg = ["solana-clap-v3-utils/gpg", "solana-cli-config/gpg", "solana-cli-output/gpg"]
 
 [dependencies]
 base64 = { workspace = true }
