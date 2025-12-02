@@ -1,6 +1,6 @@
 #![allow(clippy::arithmetic_side_effects)]
 use {
-    solana_cli::cli::{process_command, CliCommand, CliConfig},
+    fireblocks_solana_cli::cli::{process_command, CliCommand, CliConfig},
     solana_commitment_config::CommitmentConfig,
     solana_faucet::faucet::run_local_faucet,
     solana_sdk::signature::Keypair,

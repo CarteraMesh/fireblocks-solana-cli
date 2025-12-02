@@ -16,5 +16,5 @@ git ls-files $target | xargs sed -i s/solana_signer::SignerError/solana_sdk::sig
 git ls-files $target | xargs sed -i s/solana_client_nonce_utils/solana_client::nonce_utils/g
 git ls-files $target | xargs sed -i s/solana_client_api::config::RpcTransactionConfig/solana_client::rpc_config::RpcTransactionConfig/g
 git ls-files $target | xargs sed -i s/solana_client_api::config/solana_client::rpc_config/g
-git ls-files $target | xargs sed -i s/BlockhashQuery::new_from_matches/crate::new_from_matches/g crates/cli/src/*.rs
+git ls-files $target | xargs sed -i s/BlockhashQuery::new_from_matches/crate::new_from_matches/g
 git ls-files $target | xargs sed -i s/solana_vote_program::/solana_vote_interface::/g

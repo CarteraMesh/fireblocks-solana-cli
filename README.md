@@ -1,7 +1,8 @@
-# fireblocks-solana
+# Fireblocks<>Solana
 
 Patch version of solana-cli with remote signing with fireblock support
 
+<script src="https://asciinema.org/a/734209.js" id="asciicast-734209" async="true"></script>
 
 ## Updated packages 
 

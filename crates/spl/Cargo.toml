@@ -1,8 +1,8 @@
 [package]
-name = "spl-token-cli"
+name = "fireblocks-spl-token-cli"
 version = "5.5.0"
-description = "SPL-Token Command-line Utility"
-documentation = "https://docs.rs/spl-token-cli"
+description = "SPL-Token Command-line Utility with Fireblocks signing support"
+documentation = "https://docs.rs/fireblocks-spl-token-cli"
 readme = "README.md"
 authors = { workspace = true }
 repository = { workspace = true }
@@ -16,24 +16,24 @@ path = "src/main.rs"
 
 [features]
 default = ["fireblocks"]
-fireblocks = [
-    "solana-clap-v3-utils/fireblocks",
-    "solana-cli-config/fireblocks",
-    "solana-cli-output/fireblocks",
+fireblocks = []
+gpg = [
+    "fireblocks-solana-clap-v3-utils/gpg",
+    "fireblocks-solana-cli-config/gpg",
+    "fireblocks-solana-cli-output/gpg",
 ]
-gpg = ["solana-clap-v3-utils/gpg", "solana-cli-config/gpg", "solana-cli-output/gpg"]
 
 [dependencies]
 base64 = { workspace = true }
 clap = "3.2.23"
 console = { workspace = true }
+fireblocks-solana-clap-v3-utils = { workspace = true }
+fireblocks-solana-cli-config = { workspace = true }
+fireblocks-solana-cli-output = { workspace = true }
 futures = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 solana-account-decoder = { workspace = true }
-solana-clap-v3-utils = { workspace = true }
-solana-cli-config = { workspace = true }
-solana-cli-output = { workspace = true }
 solana-client = { workspace = true }
 solana-commitment-config = { workspace = true }
 solana-logger = { workspace = true }

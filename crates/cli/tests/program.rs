@@ -6,7 +6,7 @@ use {
     agave_feature_set::enable_alt_bn128_syscall,
     assert_matches::assert_matches,
     serde_json::Value,
-    solana_cli::{
+    fireblocks_solana_cli::{
         cli::{process_command, CliCommand, CliConfig},
         program::{ProgramCliCommand, CLOSE_PROGRAM_WARNING},
         program_v4::{AdditionalCliConfig, ProgramV4CliCommand},

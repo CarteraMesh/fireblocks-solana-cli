@@ -1,5 +1,5 @@
 use {
-    solana_cli::{
+    fireblocks_solana_cli::{
         address_lookup_table::{
             AddressLookupTableCliCommand, DEACTIVATE_LOOKUP_TABLE_WARNING,
             FREEZE_LOOKUP_TABLE_WARNING,

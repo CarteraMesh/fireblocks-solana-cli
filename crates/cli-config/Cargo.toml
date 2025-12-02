@@ -1,6 +1,6 @@
 [package]
-name = "solana-cli-config"
-documentation = "https://docs.rs/solana-cli-config"
+name = "fireblocks-solana-cli-config"
+documentation = "https://docs.rs/fireblocks-solana-cli-config"
 version = { workspace = true }
 authors = { workspace = true }
 description = "forked version with fireblocks signing support"
@@ -12,15 +12,19 @@ edition = { workspace = true }
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
 
+[lib]
+name = "solana_cli_config"
+path = "src/lib.rs"
+
 [features]
 default = ["fireblocks"]
-fireblocks = ["solana-clap-utils/fireblocks"]
-gpg = ["solana-clap-utils/gpg"]
+fireblocks = []
+gpg = ["fireblocks-solana-clap-utils/gpg"]
 
 [dependencies]
 dirs-next = { workspace = true }
+fireblocks-solana-clap-utils = { workspace = true }
 serde = { workspace = true }
 serde_yaml = { workspace = true }
-solana-clap-utils = { workspace = true }
 solana-commitment-config = { workspace = true }
 url = { workspace = true }

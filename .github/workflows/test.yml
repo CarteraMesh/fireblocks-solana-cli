@@ -30,13 +30,13 @@ jobs:
           commitment: finalized
       - name: test clap-utils
         run: |
-          cargo test -p solana-clap-utils --lib --tests -- --nocapture
+          cargo test -p fireblocks-solana-clap-utils --lib --tests -- --nocapture
       - name: test clap-v3-utils
         run: |
-          cargo test -p solana-clap-v3-utils --lib --tests -- --nocapture
+          cargo test -p fireblocks-solana-clap-v3-utils --lib --tests -- --nocapture
       - name: test cli-config
         run: |
-          cargo test -p solana-cli-config --lib --tests -- --nocapture
+          cargo test -p fireblocks-solana-cli-config --lib --tests -- --nocapture
       - name: cargo build
         run: |
           cargo build

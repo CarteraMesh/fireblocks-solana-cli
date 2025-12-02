@@ -1,14 +1,14 @@
 use {
     clap::{crate_description, crate_name, value_t_or_exit, ArgMatches},
     console::style,
+    fireblocks_solana_cli::{
+        clap_app::get_clap_app,
+        cli::{parse_command, process_command, CliCommandInfo, CliConfig},
+    },
     solana_clap_utils::{
         input_validators::normalize_to_url_if_moniker,
         keypair::{CliSigners, DefaultSigner},
         DisplayError,
-    },
-    solana_cli::{
-        clap_app::get_clap_app,
-        cli::{parse_command, process_command, CliCommandInfo, CliConfig},
     },
     solana_cli_config::{Config, ConfigInput},
     solana_cli_output::{

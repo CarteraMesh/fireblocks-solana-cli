@@ -1,6 +1,6 @@
 use {
+    fireblocks_spl_token_cli::{clap_app::*, command::process_command, config::Config},
     solana_sdk::signature::Signer,
-    spl_token_cli::{clap_app::*, command::process_command, config::Config},
     std::{str::FromStr, sync::Arc},
 };
 

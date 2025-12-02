@@ -11,6 +11,7 @@ members = ["crates/*"]
 resolver = "2"
 
 [workspace.dependencies]
+assert_matches = "1.5.0"
 anyhow = "1"
 agave-feature-set = { version = "=3.0.11" }
 agave-reserved-account-keys = { version = "=3.0.11" }
@@ -45,6 +46,8 @@ serde_yaml = "0.9.34"
 tracing = "0.1"
 thiserror = "2"
 tiny-bip39 = "0.8.2"
+tempfile = "3.20.0"
+test-case = "3.3.1"
 uriparse = "0.6.4"
 url = "2.5.4"
 rpassword = "7.4"
@@ -60,7 +63,6 @@ solana-config-interface = "2.0.0"
 solana-connection-cache = { version = "=3.0.11", default-features = false }
 solana-derivation-path = "3.0.0"
 solana-epoch-rewards-hasher = { version = "=3.0.0" }
-#solana-epoch-schedule = "=3.0.11"
 solana-faucet = { version = "=3.0.11" }
 solana-feature-gate-interface = "=3.0.0"
 solana-loader-v3-interface = "6.1.0"
@@ -89,26 +91,14 @@ solana-vote-interface = { version = "3" , features = [ "bincode"] }
 solana-zk-sdk = "4"
 spl-memo-interface = { version = "2" }
 
-solana-clap-utils = { path = "crates/clap-utils", version = "=3.0.11" }
-solana-clap-v3-utils = { path = "crates/clap-v3-utils", version = "=3.0.11" }
-solana-cli-config = { path = "crates/cli-config", version = "=3.0.11" }
-solana-cli-output = { path = "crates/cli-output", version = "=3.0.11" }
-
-assert_matches = "1.5.0"
-tempfile = "3.20.0"
-test-case = "3.3.1"
-
+fireblocks-solana-clap-utils = { path = "crates/clap-utils", version = "=3.0.11" }
+fireblocks-solana-clap-v3-utils = { path = "crates/clap-v3-utils", version = "=3.0.11" }
+fireblocks-solana-cli-config = { path = "crates/cli-config", version = "=3.0.11" }
+fireblocks-solana-cli-output = { path = "crates/cli-output", version = "=3.0.11" }
 fireblocks-solana-signer = { version = "3.0.2-rc.1" }
 
 [workspace.lints.rust]
 warnings = "deny"
-
-[workspace.lints.rust.unexpected_cfgs]
-level = "warn"
-check-cfg = [
-    'cfg(target_os, values("solana"))',
-    'cfg(feature, values("frozen-abi", "no-entrypoint"))',
-]
 
 # Clippy lint configuration that can not be applied in clippy.toml
 [workspace.lints.clippy]

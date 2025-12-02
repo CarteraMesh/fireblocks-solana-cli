@@ -1,7 +1,7 @@
 [package]
-name = "solana-clap-utils"
-description = "Solana utilities for the clap"
-documentation = "https://docs.rs/solana-clap-utils"
+name = "fireblocks-solana-clap-utils"
+description = "Fireblocks Solana utilities for the clap"
+documentation = "https://docs.rs/fireblocks-solana-clap-utils"
 version = { workspace = true }
 authors = { workspace = true }
 repository = { workspace = true }
@@ -17,16 +17,17 @@ ignored = ["tracing"]
 
 [lib]
 name = "solana_clap_utils"
+path = "src/lib.rs"
 
 [features]
 default = ["fireblocks"]
-fireblocks = ["fireblocks-solana-signer", "log"]
+fireblocks = ["log"]
 gpg = ["fireblocks-solana-signer/gpg"]
 
 [dependencies]
 chrono = { workspace = true, features = ["default"] }
 clap = "2.33.0"
-fireblocks-solana-signer = { workspace = true, optional = true }
+fireblocks-solana-signer = { workspace = true }
 log = { workspace = true, optional = true }
 rpassword = { workspace = true }
 solana-cluster-type = { workspace = true }
