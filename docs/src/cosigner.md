@@ -1,30 +1,63 @@
-# CoSigner Validation
+# Co-signer Validation
 
-Fireblocks Policies do not provide "deep" analysis for solana program calls. There is an opensource project named [carbon](https://github.com/sevenlabs-hq/carbon/blob/main/README.md) that produces real rust code to decode many popular solana programs (see table below). 
+## Problem
 
-This project is designed primary for `indexers`. We purpose utilizing the decoders to validate cosigner transactions via [callbacks](https://developers.fireblocks.com/docs/create-api-co-signer-callback-handler)
+Fireblocks policies provide transaction-level controls (amount limits, destination whitelists) but lack deep inspection of Solana program instructions. For complex DeFi operations, you need to understand what the transaction actually does before signing.
 
-## Benefits 
+## Solution: Carbon + Co-signer Callbacks
 
-- Memory safe rust
-- Speed 
-- Compile time safety
-- Runtime safety
-- Easy setup, focus only on business logic
-- Comprehensive testing capabilities
+[Carbon](https://github.com/sevenlabs-hq/carbon) is a Rust framework that decodes Solana program instructions into strongly-typed data structures. We leverage it for transaction validation in [co-signer callbacks](https://developers.fireblocks.com/reference/response-object).
 
+> [!NOTE]
+> Carbon was originally built for indexers but works perfectly for transaction validation due to its strongly-typed decoders.
 
-## Example 
+### How It Works
 
-Circle has a program for Cross-Chain Transfer Protocol, [CCTP](https://developers.circle.com/cctp). This allows USDC to be transferred between chains, for example, solana to polygon. With the carbon framework we can inspect how much is USDC would be transferred. 
+```text
+Fireblocks Transaction Request
+         |
+         v
+Co-signer Callback Handler (your Rust service)
+         |
+         v
+Carbon Decoder (parse instruction data)
+         |
+         v
+Business Logic (validate against rules)
+         |
+         v
+Response: APPROVE | REJECT | RETRY
+```
 
-Circle first `burns` USDC on source chain and then `mints` USDC on the destination chain. We need to look for [depositForBurn](https://github.com/circlefin/solana-cctp-contracts/blob/master/programs/v2/token-messenger-minter-v2/src/token_messenger_v2/instructions/deposit_for_burn.rs)
+The callback handler has 30 seconds to respond with:
+- `APPROVE` - Sign the transaction
+- `REJECT` - Deny with optional reason (logged in audit)
+- `RETRY` - Retry up to 20 times over 60 minutes
+- `IGNORE` - Skip this approval (for multi-sig scenarios)
 
+## Benefits
 
-```rust 
-pub struct CctpTokenProcessor;
+- **Type Safety**: Compile-time guarantees on instruction parsing
+- **Performance**: Rust's speed ensures sub-second validation
+- **Maintainability**: Strongly-typed code vs parsing raw bytes
+- **Testing**: Unit test business rules against real transaction data
+- **Coverage**: 60+ popular Solana programs already supported
+
+## Example: CCTP Transfer Limits
+
+Circle's [CCTP](https://developers.circle.com/cctp) enables cross-chain USDC transfers. The protocol burns USDC on the source chain and mints on the destination. 
+
+**Business Requirement**: Block any cross-chain transfer exceeding 1,000 USDC.
+
+With Carbon, we decode the [depositForBurn](https://github.com/circlefin/solana-cctp-contracts/blob/master/programs/v2/token-messenger-minter-v2/src/token_messenger_v2/instructions/deposit_for_burn.rs) instruction:
+
+```rust
+use carbon_circle_cctp_decoder::TokenMessengerMinterV2Instruction;
+
+pub struct CctpValidator;
+
 #[async_trait]
-impl Processor for CctpTokenProcessor {
+impl Processor for CctpValidator {
     type InputType = InstructionProcessorInputType<TokenMessengerMinterV2Instruction>;
 
     async fn process(
@@ -32,35 +65,55 @@ impl Processor for CctpTokenProcessor {
         data: Self::InputType,
         _metrics: Arc<MetricsCollection>,
     ) -> CarbonResult<()> {
-        let (metadata, ix, _nested_instructions, i) = data;
+        let (metadata, ix, _nested_instructions, _idx) = data;
 
         match ix.data {
-            TokenMessengerMinterV2Instruction::DepositForBurn(arg) => {
-                if arg.params.amount > 1_000_000_000 {
-                    eprintln!("amount is too large...deny transaction")
+            TokenMessengerMinterV2Instruction::DepositForBurn(args) => {
+                let amount_usdc = args.params.amount / 1_000_000; // USDC has 6 decimals
+                
+                if amount_usdc > 1_000 {
+                    // Return REJECT to Fireblocks callback
+                    return Err(format!("Transfer amount {} USDC exceeds limit", amount_usdc));
                 }
-                println!("amount to burn {}", arg.params.amount);
+                
+                tracing::info!(amount_usdc, "CCTP transfer approved");
+                Ok(())
             }
-            _ => {
-                eprintln!("Instruction Ignored")
-            }
-        };
-
-        Ok(())
+            _ => Ok(()), // Ignore other instructions
+        }
     }
 }
 
-Carbon provides a strongly typed Rust definition that easily allows us to see the amount being burned (i.e. transferred to another chain)
+## Advanced: Cross-Program Invocations (CPIs)
 
-## Cross Program Invocations
+Carbon decodes nested instruction calls, critical for DeFi protocols. Example: Jupiter's swap router internally calls the Token Program to perform swaps.
 
-Carbon also can inspect programs that call other programs. This is common in Defi applications like jupiter swap router. Jupiter calls the token program to convert native SOL to token SOL. 
+**Use Case**: Validate that a Jupiter swap doesn't exceed slippage tolerance or interacts only with approved liquidity pools.
 
-## Requirements
+```rust
+use carbon_jupiter_swap_decoder::JupiterSwapInstruction;
 
-- Cosigner setup 
-- Configure signer callback 
+match ix.data {
+    JupiterSwapInstruction::SharedAccountsRoute(args) => {
+        // Inspect swap parameters, check slippage, validate pools
+        let slippage_bps = args.quoted_out_amount - args.slippage_bps;
+        if slippage_bps > MAX_SLIPPAGE {
+            return Err("Slippage too high");
+        }
+    }
+    _ => {}
+}
+```
 
+## Implementation Requirements
+
+1. Deploy co-signer infrastructure (AWS Nitro Enclaves or GCP Confidential Space)
+2. Configure callback endpoint in Fireblocks console
+3. Implement Carbon-based validation logic
+4. Test against real Solana transactions
+5. Production monitoring and audit log integration
+
+**Note**: Co-signer infrastructure requires significant compute resources (large EC2 Nitro instances for SGX/enclave support). 
 
 ### Program Decoders
 

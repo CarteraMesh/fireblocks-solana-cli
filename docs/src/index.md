@@ -1,46 +1,55 @@
 # Introduction
 
-Fireblocks<>Solana Rust integration
+Fireblocks<>Solana Rust integration providing enterprise-grade security with developer-friendly tooling.
 
 ## Features 
 
- - Remote signing support
- - Advanced Co-signer program validation
+- **Remote Signing**: Use Fireblocks as a drop-in replacement for local Solana keypairs
+- **Advanced Validation**: Deep program inspection via co-signer callbacks with strongly-typed Rust decoders
 
+---
 
 ## Remote Signing
 
-Here is a modified version of solana CLI which uses fireblocks as a signing provider to send some [SOL](https://orb.helius.dev/tx/3M6xzFVSgj9fdpmFizFHU2UPRZWZPm1CrDcSpKe2Mo6uHkBxeK4XHJ8oW4ygwH275U3b5HP36pvdT7CiDfyzjq3t?cluster=devnet&tab=instruction).
+> [!WARNING]
+> Standard Solana tooling stores private keys in cleartext on disk.
+
+This integration replaces that with Fireblocks' secure key management.
+
+Here's a transaction signed via Fireblocks sending [SOL on devnet](https://orb.helius.dev/tx/3M6xzFVSgj9fdpmFizFHU2UPRZWZPm1CrDcSpKe2Mo6uHkBxeK4XHJ8oW4ygwH275U3b5HP36pvdT7CiDfyzjq3t?cluster=devnet&tab=instruction):
 
 <script src="https://asciinema.org/a/734209.js" id="asciicast-734209" async="true"></script>
 
-### Setup
+### Configuration
 
-This is solana's configuration file:
+Standard Solana config (`~/.config/solana/cli/config.yml`):
 
 ```yaml
----
 json_rpc_url: "https://api.devnet.solana.com"
-keypair_path: "/home/user/.config/solana/id.json"
+keypair_path: "/home/user/.config/solana/id.json"  # Cleartext private key
 ```
 
-This informs the solana [CLI](https://solana.com/docs/intro/installation#solana-config) and [SDK](https://docs.rs/solana-cli-config/2.3.6/solana_cli_config/struct.Config.html#structfield.keypair_path) where the private key is stored (which is cleartext)
-
-### Secure & Convenient
+With Fireblocks integration:
 
 ```yaml
-keypair_path: fireblocks://sandbox
+json_rpc_url: "https://api.devnet.solana.com"
+keypair_path: "fireblocks://sandbox"  # Secure remote signing
 ```
 
-This small config enables seamless integration with Fireblocks SDK and all benefits around security, convenience, and flexibility.
-Transactions can be signed automatically with a co-signer or approved from your secure mobile device via biometrics and PIN. Comprehensive policies can block unwanted requests.
+This single line change enables:
+- **Security**: Keys never leave Fireblocks' secure enclaves
+- **Convenience**: Approve via mobile app (biometrics + PIN) or auto-sign with co-signer
+- **Compliance**: Policy enforcement and comprehensive audit logs
+- **Compatibility**: Works with existing Solana CLI and SDK code
 
-See [Signer](./signer.md) reference for implementation details.
+See [Signer](./signer.md) for implementation details.
 
 ---
 
 ## Co-Signer Validation
 
-Use rust with strongly typed program decoder to accurately understand the transaction and validate it before signing.
+Go beyond basic policy rules with deep transaction inspection. Use Carbon's strongly-typed Rust decoders to understand exactly what a transaction does before signing.
 
-See examples [here](./cosigner.md)
+**Example**: Automatically approve USDC transfers under $1,000 but require manual approval for larger amounts.
+
+See detailed examples and implementation guide [here](./cosigner.md).

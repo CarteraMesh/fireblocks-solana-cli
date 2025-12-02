@@ -2,7 +2,7 @@
 
 [Introduction](index.md)
 
-# Integrations
+## Integrations
 
 - [CLI](cli/index.md)
   - [Solana CLI](cli/solana-cli.md)
@@ -15,8 +15,8 @@
 
 - [CoSigner Validation](cosigner.md)  
 
-# [Installation](installation.md)
+## [Installation](installation.md)
 
-# Reference
+## [Reference](reference.md)
   
 - [Signer](signer.md)
