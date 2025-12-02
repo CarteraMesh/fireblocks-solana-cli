@@ -4,6 +4,63 @@ Fireblocks Policies do not provide "deep" analysis for solana program calls. The
 
 This project is designed primary for `indexers`. We purpose utilizing the decoders to validate cosigner transactions via [callbacks](https://developers.fireblocks.com/docs/create-api-co-signer-callback-handler)
 
+## Benefits 
+
+- Memory safe rust
+- Speed 
+- Compile time safety
+- Runtime safety
+- Easy setup, focus only on business logic
+- Comprehensive testing capabilities
+
+
+## Example 
+
+Circle has a program for Cross-Chain Transfer Protocol, [CCTP](https://developers.circle.com/cctp). This allows USDC to be transferred between chains, for example, solana to polygon. With the carbon framework we can inspect how much is USDC would be transferred. 
+
+Circle first `burns` USDC on source chain and then `mints` USDC on the destination chain. We need to look for [depositForBurn](https://github.com/circlefin/solana-cctp-contracts/blob/master/programs/v2/token-messenger-minter-v2/src/token_messenger_v2/instructions/deposit_for_burn.rs)
+
+
+```rust 
+pub struct CctpTokenProcessor;
+#[async_trait]
+impl Processor for CctpTokenProcessor {
+    type InputType = InstructionProcessorInputType<TokenMessengerMinterV2Instruction>;
+
+    async fn process(
+        &mut self,
+        data: Self::InputType,
+        _metrics: Arc<MetricsCollection>,
+    ) -> CarbonResult<()> {
+        let (metadata, ix, _nested_instructions, i) = data;
+
+        match ix.data {
+            TokenMessengerMinterV2Instruction::DepositForBurn(arg) => {
+                if arg.params.amount > 1_000_000_000 {
+                    eprintln!("amount is too large...deny transaction")
+                }
+                println!("amount to burn {}", arg.params.amount);
+            }
+            _ => {
+                eprintln!("Instruction Ignored")
+            }
+        };
+
+        Ok(())
+    }
+}
+
+Carbon provides a strongly typed Rust definition that easily allows us to see the amount being burned (i.e. transferred to another chain)
+
+## Cross Program Invocations
+
+Carbon also can inspect programs that call other programs. This is common in Defi applications like jupiter swap router. Jupiter calls the token program to convert native SOL to token SOL. 
+
+## Requirements
+
+- Cosigner setup 
+- Configure signer callback 
+
 
 ### Program Decoders
 
