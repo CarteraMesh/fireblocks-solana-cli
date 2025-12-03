@@ -95,7 +95,7 @@ fireblocks-solana-clap-utils = { path = "crates/clap-utils", version = "=3.0.11"
 fireblocks-solana-clap-v3-utils = { path = "crates/clap-v3-utils", version = "=3.0.11" }
 fireblocks-solana-cli-config = { path = "crates/cli-config", version = "=3.0.11" }
 fireblocks-solana-cli-output = { path = "crates/cli-output", version = "=3.0.11" }
-fireblocks-solana-signer = { version = "3.0.2-rc.1" }
+fireblocks-solana-signer = { version = "3" }
 
 [workspace.lints.rust]
 warnings = "deny"

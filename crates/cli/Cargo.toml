@@ -15,7 +15,7 @@ targets = ["x86_64-unknown-linux-gnu"]
 ignored = ["solana-connection-cache"]
 
 [[bin]]
-name = "solana"
+name = "fb-solana"
 path = "src/main.rs"
 
 [features]
