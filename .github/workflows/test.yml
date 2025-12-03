@@ -5,6 +5,12 @@ env:
   RUST_LOG: "info,fireblocks_solana_signer=debug"
 on:
   workflow_dispatch:
+    inputs:
+      mac:
+        description: "Run tests on macOS"
+        required: false
+        default: false
+        type: boolean
   pull_request:
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -12,8 +18,11 @@ concurrency:
 name: test
 jobs:
   build:
-    runs-on: ${{ vars.RUNNER }}
-    name: build clis
+    strategy:
+      matrix:
+        os: ${{ fromJSON(format('["{0}"{1}]', vars.RUNNER, inputs.mac && ', "macos-latest"' || '')) }}
+    runs-on: ${{ matrix.os }}
+    name: Test ${{ matrix.os }}
     steps:
       - name: Init
         uses: carteramesh/ci/.github/actions/rust-init@main
