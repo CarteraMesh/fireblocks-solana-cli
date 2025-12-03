@@ -24,7 +24,7 @@ jobs:
       - name: Init
         uses: carteramesh/ci/.github/actions/rust-init@main
         with:
-          ubuntu_packages: "libudev-dev libgpgme-dev"
+          ubuntu_packages: "libgpgme-dev"
       - uses: CarteraMesh/fireblocks-config-action@main
         id: config
         with:
