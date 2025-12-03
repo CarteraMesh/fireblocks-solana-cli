@@ -2650,9 +2650,9 @@ dependencies = [
 
 [[package]]
 name = "fireblocks-solana-signer"
-version = "3.0.2-rc.1"
+version = "3.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9ed0511faf6187d57c0e5b89b3a2cd99b0473586d77167761d8b27a9441385d9"
+checksum = "0f42c46e82baa5bbea14b127cd35f112bfa0958f2671883a271ad4683836e9b4"
 dependencies = [
  "base64 0.22.1",
  "bincode",
