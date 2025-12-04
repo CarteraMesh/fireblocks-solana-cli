@@ -53,7 +53,7 @@ jobs:
           mkdir -p release
           for i in fb-solana fb-spl-token; do
             cp target/${{ matrix.target }}/release/$i release/
-            tar -C release -czf ${i}-${{ steps.tag.outputs._tag }}-${{ matrix.name }}.tar.gz $i
+            (cd release && tar -czf ${i}-${{ steps.tag.outputs._tag }}-${{ matrix.name }}.tar.gz $i )
           done
           ls -la release
 
