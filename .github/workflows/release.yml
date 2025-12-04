@@ -61,12 +61,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fb-solana-${{ matrix.name }}
-          path: release/fb-solana-${{ steps.tag.outputs._tag }}-${{ matrix.name }}.*
+          path: release/fb-solana-${{ steps.tag.outputs._tag }}-${{ matrix.name }}.tar.gz
       - name: Upload artifact spl-token
         uses: actions/upload-artifact@v4
         with:
           name: fb-spl-token-${{ matrix.name }}
-          path: release/fb-spl-token-${{ steps.tag.outputs._tag }}-${{ matrix.name }}.*
+          path: release/fb-spl-token-${{ steps.tag.outputs._tag }}-${{ matrix.name }}.tar.gz
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v1
         with:

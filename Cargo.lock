@@ -4447,6 +4447,83 @@ dependencies = [
 ]
 
 [[package]]
+name = "mollusk-svm"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4bbeba84aa65353fb8330b8d748f26d2d6faf001077d1be945e2342e86cb59a6"
+dependencies = [
+ "agave-feature-set",
+ "agave-syscalls",
+ "bincode",
+ "mollusk-svm-error",
+ "mollusk-svm-keys",
+ "mollusk-svm-result",
+ "solana-account",
+ "solana-bpf-loader-program",
+ "solana-clock",
+ "solana-compute-budget",
+ "solana-epoch-rewards",
+ "solana-epoch-schedule",
+ "solana-hash 3.0.0",
+ "solana-instruction",
+ "solana-instruction-error",
+ "solana-loader-v3-interface",
+ "solana-loader-v4-interface",
+ "solana-logger",
+ "solana-precompile-error",
+ "solana-program-error",
+ "solana-program-runtime",
+ "solana-pubkey 3.0.0",
+ "solana-rent",
+ "solana-sdk-ids",
+ "solana-slot-hashes",
+ "solana-stake-interface",
+ "solana-svm-callback",
+ "solana-svm-log-collector",
+ "solana-svm-timings",
+ "solana-system-program",
+ "solana-sysvar",
+ "solana-sysvar-id",
+ "solana-transaction-context",
+]
+
+[[package]]
+name = "mollusk-svm-error"
+version = "0.7.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "682ad3a990ae8f336ee10f402da2e900a37cff38730e29aa8cda2d82e1b2e9f1"
+dependencies = [
+ "solana-pubkey 3.0.0",
+ "thiserror 1.0.69",
+]
+
+[[package]]
+name = "mollusk-svm-keys"
+version = "0.7.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b97ddf2442ea621ea5ae25b0c21ae2861588ea34abce0d059cb601de24cd646f"
+dependencies = [
+ "mollusk-svm-error",
+ "solana-account",
+ "solana-instruction",
+ "solana-pubkey 3.0.0",
+ "solana-transaction-context",
+]
+
+[[package]]
+name = "mollusk-svm-result"
+version = "0.7.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4f23d402bb19bac3b25b02ada2cf1f58dd4bc8e4b12a38fc1f58aef0090ff0f6"
+dependencies = [
+ "solana-account",
+ "solana-instruction",
+ "solana-program-error",
+ "solana-pubkey 3.0.0",
+ "solana-rent",
+]
+
+[[package]]
 name = "multimap"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4806,6 +4883,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2355d85b9a3786f481747ced0e0ff2ba35213a1f9bd406ed906554d7af805a1"
 
 [[package]]
+name = "p-memo"
+version = "0.0.0"
+dependencies = [
+ "mollusk-svm",
+ "pinocchio",
+ "pinocchio-log",
+ "solana-sdk",
+]
+
+[[package]]
 name = "parking"
 version = "2.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5013,6 +5100,32 @@ name = "pin-utils"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
+
+[[package]]
+name = "pinocchio"
+version = "0.9.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b971851087bc3699b001954ad02389d50c41405ece3548cbcafc88b3e20017a"
+
+[[package]]
+name = "pinocchio-log"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cd11022408f312e6179ece321c1f7dc0d1b2aa7765fddd39b2a7378d65a899e8"
+dependencies = [
+ "pinocchio-log-macro",
+]
+
+[[package]]
+name = "pinocchio-log-macro"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "69fb52edb3c5736b044cc462b0957b9767d0f574d138f4e2761438c498a4b467"
+dependencies = [
+ "quote",
+ "regex",
+ "syn 1.0.109",
+]
 
 [[package]]
 name = "pkcs8"
@@ -6495,6 +6608,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "014dcb9293341241dd153b35f89ea906e4170914f4a347a95e7fb07ade47cd6f"
 dependencies = [
  "bincode",
+ "qualifier_attr",
  "serde",
  "serde_bytes",
  "serde_derive",
@@ -9910,6 +10024,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "de76c1564bd447a6bbc17a219400c1de9924e9ea24fe7642f672979f856490ac"
 dependencies = [
  "bincode",
+ "qualifier_attr",
  "serde",
  "serde_derive",
  "solana-account",
