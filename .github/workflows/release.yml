@@ -72,5 +72,5 @@ jobs:
         with:
           tag_name: ${{ steps.tag.outputs._tag }}
           files: |
-            fb-solana-${{ steps.tag.outputs._tag }}-${{ matrix.name }}.tar.gz
-            fb-spl-token-${{ steps.tag.outputs._tag }}-${{ matrix.name }}.tar.gz
+            release/fb-solana-${{ steps.tag.outputs._tag }}-${{ matrix.name }}.tar.gz
+            release/fb-spl-token-${{ steps.tag.outputs._tag }}-${{ matrix.name }}.tar.gz
